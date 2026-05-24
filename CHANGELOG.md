@@ -1,3 +1,7 @@
+## [1.0.5] - 2026-05-24
+
+- [Feature] Add mocks to help apps test Jobber integration
+
 ## [1.0.3] - 2026-05-22
 
 - [Fix] Jobber returns invoice.issuedDate as a time, not as a date

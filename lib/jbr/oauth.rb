@@ -74,11 +74,5 @@ module Jbr
     end
 
     def headers = { 'X-JOBBER-GRAPHQL-VERSION' => '2026-04-22' }
-
-    def self.url_for(params = {})
-      uri = URI 'https://api.getjobber.com/api/oauth/authorize'
-      uri.query ||= params.merge(response_type: 'code', client_id: client_id).to_query
-      uri.to_s
-    end
   end
 end

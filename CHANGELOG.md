@@ -1,3 +1,7 @@
+## [1.1.0] - 2026-05-27
+
+- [New] Add Jbr::Event.params_for
+
 ## [1.0.8] - 2026-05-26
 
 - [New] Add Jbr::OAuth.client_id and Jbr::OAuth.client_secret

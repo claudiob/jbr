@@ -13,5 +13,10 @@ module Jbr
 
     # @return [String] unique identifier of the event account.
     def account_id = @params.dig :data, :webHookEvent, :accountId
+
+    # @return [Hash] the shape of the payload send by Jobber to the callback URL.
+    def self.params_for(item_id:, account_id:)
+      { data: { webHookEvent: { itemId: item_id, accountId: account_id } } }
+    end
   end
 end

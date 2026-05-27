@@ -30,3 +30,5 @@ require 'jbr/mock/account'
 require 'jbr/mock/url'
 
 require 'jbr/mocking'
+
+require 'jbr/event'

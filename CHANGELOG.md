@@ -1,3 +1,7 @@
+## [1.0.7] - 2026-05-26
+
+- [New] Add Jbr::Event to parse webhook payloads
+
 ## [1.0.6] - 2026-05-24
 
 - [Change] Return mock.oauth_error as the message of Jbr::Error

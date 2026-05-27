@@ -83,6 +83,17 @@ invoice.issued_at # => 2026-05-22 12:12:53
 invoice.completed_at # => 2026-05-22 14:32:53
 ```
 
+### Events
+
+Parse the payload of a Jobber event webhook:
+
+```ruby
+event = Jbr::Event.new data: { webHookEvent: { topic: 'JOB_CREATE', appId: 'app-1',
+  accountId: 'account-1', itemId: 'job-1', occurredAt: '2026-05-22T15:46:33Z' } }
+event.account_id = 'account-1
+event.item_id = 'job-1
+```
+
 ## Available mocks
 
 Use these methods to mock request to Jobber when testing an app:

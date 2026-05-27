@@ -44,6 +44,12 @@ module Jbr
       new(credentials).tap { |oauth| oauth.account_id = oauth.account.id }
     end
 
+    # @return [String, nil] The client ID to interact with the API.
+    def self.client_id = ENV['JOBBER_CLIENT_ID']
+
+    # @return [String, nil] The client secret to interact with the API.
+    def self.client_secret = ENV['JOBBER_CLIENT_SECRET']
+
   private
 
     def refresh
@@ -64,10 +70,6 @@ module Jbr
       { access_token: output['access_token'], refresh_token: output['refresh_token'],
         expires_at: (Time.current + output.fetch('expires_in', 3600).to_i) }
     end
-
-    def self.client_id = ENV['JOBBER_CLIENT_ID']
-
-    def self.client_secret = ENV['JOBBER_CLIENT_SECRET']
 
     def client
       GraphQL::Client.new endpoint: 'https://api.getjobber.com/api/graphql', token: @access_token, headers: headers

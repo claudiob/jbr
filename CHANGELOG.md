@@ -1,3 +1,7 @@
+## [1.0.8] - 2026-05-26
+
+- [New] Add Jbr::OAuth.client_id and Jbr::OAuth.client_secret
+
 ## [1.0.7] - 2026-05-26
 
 - [New] Add Jbr::Event to parse webhook payloads

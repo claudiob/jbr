@@ -2,7 +2,7 @@ module Jbr
   class Request < Resource
     CREATE = <<~GRAPHQL.freeze
       mutation($input: RequestCreateInput!) {
-        requestCreate(input: $input) { request { id } userErrors { message } }
+        requestCreate(input: $input) { request { id property { id } } userErrors { message } }
       }
     GRAPHQL
 
@@ -18,8 +18,14 @@ module Jbr
     # @option params [String] :title the reason why the lead is created
     # @option params [String] :instructions a comment about the lead
     def create(params = {})
-      @client_id = @oauth.clients.create_with(params).find_or_create_by(phone: params[:phone]).id
-      input = { clientId: @client_id, title: params[:title], assessment: { instructions: params[:instructions] } }
+      client = @oauth.clients.create_with(params).find_or_create_by(phone: params[:phone])
+      @client_id = client.id
+      @property_id = client.property_id
+
+      input = {
+        clientId: @client_id, title: params[:title], propertyId: @property_id,
+        assessment: { instructions: params[:instructions] }
+      }
       output = @oauth.query CREATE, variables: { input: input }
       @id = output.dig 'requestCreate', 'request', 'id'
       self

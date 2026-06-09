@@ -1,3 +1,7 @@
+## [1.2.0] - 2026-06-09
+
+- [New] Create a Property with a Request if needed
+
 ## [1.1.0] - 2026-05-27
 
 - [New] Add Jbr::Event.params_for

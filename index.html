@@ -74,8 +74,8 @@
   --tok-number: #DE9257;
   --tok-symbol: #A9BC86;
   --tok-punc: #98A2A9;
-  --font-head: 'Arial Narrow', 'Helvetica Neue', 'Roboto Condensed', 'Liberation Sans Narrow', system-ui, sans-serif;
-  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-head: 'Avenir Next Condensed', Bahnschrift, 'Roboto Condensed', 'DejaVu Sans Condensed', Futura, sans-serif;
+  --font-body: system-ui, 'Segoe UI', Roboto, 'DejaVu Sans', sans-serif;
   --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
 }
 
@@ -206,17 +206,13 @@ h1 .dot { color: var(--accent); }
   padding: 0.62rem 1.05rem;
   font: 700 0.82rem/1 var(--font-head);
   letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none;
-  border-radius: 3px; border: 1px solid var(--accent);
-  background: var(--accent); color: var(--accent-ink);
+  border-radius: 3px; border: 1px solid var(--edge-strong);
+  background: transparent; color: var(--accent);
   box-shadow: var(--shadow);
   transition: transform 0.16s cubic-bezier(0.2, 0.9, 0.25, 1), filter 0.16s ease;
 }
 .btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
 .btn:active { transform: translateY(1px); }
-.btn.ghost {
-  background: transparent; color: var(--accent);
-  border-color: var(--edge-strong);
-}
 /* A command line is not a label, so it does not get shouted in condensed caps. */
 .btn.mono {
   font: 600 0.85rem/1 var(--font-mono);
@@ -405,7 +401,7 @@ footer p { color: var(--ink-soft); max-width: 40rem; }
             <svg viewBox='0 0 16 16' aria-hidden='true' fill='currentColor'><path d='M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z'/></svg>
             Full README on GitHub
           </a>
-          <a class='btn ghost' href='https://rubygems.org/gems/jbr'>
+          <a class='btn' href='https://rubygems.org/gems/jbr'>
             <svg viewBox='0 0 16 16' aria-hidden='true' fill='none' stroke='currentColor' stroke-width='1.6' stroke-linejoin='round'><path d='M4.6 1.8h6.8l3.1 4.4L8 14.3 1.5 6.2z'/><path d='M1.5 6.2h13'/><path d='m4.6 1.8 3.4 4.4 3.4-4.4M8 6.2v8.1'/></svg>
             Get it on RubyGems
           </a>
@@ -587,7 +583,7 @@ event.item_id # =&gt; 'job-1'</code></pre></div>
     <p>That is the whole belt. The gem also ships mocking helpers so a test suite never touches Jobber, and the install and contributing instructions live upstream.</p>
     <div class='foot-links'>
       <a class='btn' href='https://github.com/claudiob/jbr'>README &amp; mocks on GitHub</a>
-      <a class='btn ghost mono' href='https://rubygems.org/gems/jbr'>gem install jbr</a>
+      <a class='btn mono' href='https://rubygems.org/gems/jbr'>gem install jbr</a>
     </div>
   </div>
 </footer>

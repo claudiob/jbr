@@ -1,0 +1,36 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' role='img' aria-labelledby='icon-title'>
+<title id='icon-title'>jbr: an amber combination wrench lying across a gunmetal tile.</title>
+<!--
+  The same wrench the page draws in its hero, redrawn for the sizes a tab and a home
+  screen actually get. Line art does not survive 16 pixels, so here the tool is a solid
+  amber silhouette knocked out of the tile: an open C jaw at one end, a hex box at the
+  other, and nothing in between but shaft. Set `rx` to 0 for the Apple touch icon —
+  iOS applies its own mask and a corner rounded twice reads as a mistake.
+-->
+<defs>
+  <linearGradient id='tile' x1='0' y1='0' x2='0.45' y2='1'>
+    <stop offset='0%' stop-color='#3C454C'/>
+    <stop offset='100%' stop-color='#171B1F'/>
+  </linearGradient>
+  <linearGradient id='steel' x1='0' y1='0' x2='0.9' y2='1'>
+    <stop offset='0%' stop-color='#FFC978'/>
+    <stop offset='55%' stop-color='#F19A2A'/>
+    <stop offset='100%' stop-color='#D0700F'/>
+  </linearGradient>
+  <mask id='tool'>
+    <rect width='64' height='64' fill='#000'/>
+    <g transform='rotate(-40 32 32)' fill='#fff'>
+      <!-- Open end: outside first, then back into the slot, so the mouth is a real hole
+           and not a hook. Nine units of gap is the least that survives a 16px tab. -->
+      <path d='M 2 20 L 22 23 L 26 27 L 26 37 L 22 41 L 2 44 L 2 36.8 L 15 34.6
+               Q 17.4 32 15 29.4 L 2 27.2 Z'/>
+      <rect x='23' y='27' width='26' height='10' rx='2.5'/>
+      <circle cx='48' cy='32' r='13'/>
+      <!-- Box end: a six-point hole, because a wrench without a socket is a stick. -->
+      <path d='M 54.5 32 L 51.25 37.63 L 44.75 37.63 L 41.5 32 L 44.75 26.37 L 51.25 26.37 Z' fill='#000'/>
+    </g>
+  </mask>
+</defs>
+<rect width='64' height='64' rx='14' fill='url(#tile)'/>
+<rect width='64' height='64' rx='14' fill='url(#steel)' mask='url(#tool)'/>
+</svg>

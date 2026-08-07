@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang='en'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<title>jbr — a Ruby client for the Jobber API</title>
+<meta name='description' content='Every method the jbr gem exposes: credentials, requests, quotes, jobs, invoices, visits and events, in Ruby, with nothing but the standard library.'>
+<!-- All rendered from icon.svg by build-icons.sh; nothing on this page is fetched from anywhere else. -->
+<link rel='icon' href='icon.svg' type='image/svg+xml'>
+<link rel='icon' href='favicon-96x96.png' type='image/png' sizes='96x96'>
+<link rel='icon' href='favicon.ico' sizes='16x16 32x32 48x48'>
+<link rel='apple-touch-icon' href='apple-touch-icon.png' sizes='180x180'>
+<link rel='manifest' href='site.webmanifest'>
+<meta name='apple-mobile-web-app-title' content='jbr'>
+<meta name='theme-color' content='#E9E3D6' media='(prefers-color-scheme: light)'>
+<meta name='theme-color' content='#15181B' media='(prefers-color-scheme: dark)'>
+<style>
+/* ---------------------------------------------------------------------------
+   Light mode is a workbench under daylight: duck cloth, steel, oiled leather.
+   Dark mode is the same bench in a garage at dusk with one work light on it.
+   Code blocks stay dark in both, because a socket set reads best on a dark
+   tailgate and because the token colours then only have to be right once.
+   --------------------------------------------------------------------------- */
+:root {
+  --bg: #E9E3D6;
+  --bg-deep: #DBD1BD;
+  --surface: #F6F2E9;
+  --surface-2: #EDE7D9;
+  --ink: #1E2226;
+  --ink-soft: #4B545B;
+  --heading: #14181B;
+  --accent: #9A4200;
+  --accent-bright: #C2670C;
+  --accent-ink: #FFF6EC;
+  --denim: #33526E;
+  --leather: #6A4526;
+  --edge: #C5BAA3;
+  --edge-strong: #A5977C;
+  --metal-a: #FDFBF6;
+  --metal-b: #DED6C4;
+  --grain: 0.055;
+  --shadow: 0 1px 0 #FFFFFF inset, 0 2px 6px rgba(30, 34, 38, 0.12);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15181B;
+    --bg-deep: #0E1113;
+    --surface: #1E2328;
+    --surface-2: #262C31;
+    --ink: #E7EAED;
+    --ink-soft: #A2ACB4;
+    --heading: #F2F4F6;
+    --accent: #FFA033;
+    --accent-bright: #FFB65C;
+    --accent-ink: #17191B;
+    --denim: #8CB0D0;
+    --leather: #C09268;
+    --edge: #313940;
+    --edge-strong: #4A545C;
+    --metal-a: #2B3238;
+    --metal-b: #171B1F;
+    --grain: 0.075;
+    --shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 2px 8px rgba(0, 0, 0, 0.45);
+  }
+}
+:root {
+  --code-bg: #0B0E10;
+  --code-edge: #2A3238;
+  --code-ink: #DDE2E6;
+  --tok-comment: #7E8992;
+  --tok-const: #FFB65C;
+  --tok-method: #8FB4D9;
+  --tok-string: #CBB37D;
+  --tok-number: #DE9257;
+  --tok-symbol: #A9BC86;
+  --tok-punc: #98A2A9;
+  --font-head: 'Arial Narrow', 'Helvetica Neue', 'Roboto Condensed', 'Liberation Sans Narrow', system-ui, sans-serif;
+  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 1rem/1.65 var(--font-body);
+  overflow-x: hidden;
+}
+
+/* A faint fractal grain over everything, the way paint looks on a tool that has
+   been used. Inline SVG turbulence, so it costs one data URI and no request. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9;
+  opacity: var(--grain);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+h1, h2, h3 { color: var(--heading); line-height: 1.15; }
+p { margin: 0 0 1rem; }
+a { color: var(--accent); text-underline-offset: 0.2em; }
+a:hover { text-decoration-thickness: 0.14em; }
+:focus-visible { outline: 3px solid var(--accent-bright); outline-offset: 3px; border-radius: 3px; }
+
+.wrap { width: min(58rem, 100% - 2rem); margin-inline: auto; }
+
+.skip {
+  position: absolute; left: 0.75rem; top: -4rem; z-index: 40;
+  background: var(--surface); color: var(--accent);
+  padding: 0.6rem 1rem; border: 2px solid var(--accent);
+  font: 700 0.9rem/1 var(--font-head); letter-spacing: 0.08em; text-transform: uppercase;
+  transition: top 0.15s ease-out;
+}
+.skip:focus { top: 0.75rem; }
+
+/* --- The tape measure ---------------------------------------------------
+   A steel blade pulled out of its case as the page scrolls: yellow, ticked
+   every eight pixels with a longer mark every forty, and hooked at the end.
+   It is the scroll indicator, and it is also the only chrome the page has. */
+.tape {
+  position: fixed; top: 0; left: 0; right: 0; height: 12px; z-index: 30;
+  background: var(--bg-deep);
+  border-bottom: 1px solid var(--edge);
+  pointer-events: none;
+}
+.blade {
+  height: 100%; width: 0;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(30, 22, 4, 0.55) 0 1px, transparent 1px 8px),
+    repeating-linear-gradient(90deg, rgba(30, 22, 4, 0.8) 0 1.5px, transparent 1.5px 40px),
+    linear-gradient(180deg, #F2CB60 0%, #E0AE33 55%, #C38F1C 100%);
+  background-size: 100% 5px, 100% 9px, 100% 100%;
+  background-repeat: repeat-x, repeat-x, no-repeat;
+  background-position: 0 0, 0 0, 0 0;
+  position: relative;
+}
+.blade::after {
+  content: ''; position: absolute; right: -3px; top: -2px; bottom: -2px; width: 3px;
+  background: #2B2F33;
+}
+
+/* --- Hero ---------------------------------------------------------------- */
+.hero {
+  position: relative;
+  padding: 3.5rem 0 2.5rem;
+  background:
+    radial-gradient(75% 120% at 78% 8%, rgba(224, 138, 32, 0.16) 0%, rgba(224, 138, 32, 0) 62%),
+    linear-gradient(180deg, var(--surface-2) 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--edge);
+  overflow: hidden;
+}
+/* Brushed metal: hairlines running the long way, the way a steel plate is finished. */
+.hero::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(96deg,
+    rgba(255, 255, 255, 0.05) 0 1px,
+    transparent 1px 3px,
+    rgba(0, 0, 0, 0.035) 3px 4px,
+    transparent 4px 7px);
+}
+.hero .wrap { position: relative; z-index: 2; }
+.hero-grid { display: grid; gap: 1.5rem 2.5rem; align-items: center; }
+@media (min-width: 52rem) { .hero-grid { grid-template-columns: 1fr 1fr; } }
+
+.plate {
+  display: inline-flex; align-items: center; gap: 0.55rem;
+  padding: 0.3rem 0.75rem;
+  background: linear-gradient(180deg, var(--metal-a), var(--metal-b));
+  border: 1px solid var(--edge-strong);
+  border-radius: 2px;
+  font: 700 0.72rem/1 var(--font-head);
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ink-soft);
+  box-shadow: var(--shadow);
+}
+.plate .rivet {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--edge-strong);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+h1 {
+  font: 800 clamp(4rem, 17vw, 7.5rem)/0.9 var(--font-mono);
+  margin: 0.55rem 0 0; letter-spacing: -0.06em;
+  color: var(--heading);
+}
+h1 .dot { color: var(--accent); }
+.tagline {
+  font: 700 clamp(1.15rem, 4vw, 1.6rem)/1.25 var(--font-head);
+  letter-spacing: 0.01em;
+  margin: 0.9rem 0 0.5rem; color: var(--ink);
+  font-stretch: 87.5%;
+}
+.sub { color: var(--ink-soft); max-width: 34rem; margin: 0 0 1.4rem; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 0.7rem; }
+.btn {
+  display: inline-flex; align-items: center; gap: 0.5rem;
+  padding: 0.62rem 1.05rem;
+  font: 700 0.82rem/1 var(--font-head);
+  letter-spacing: 0.1em; text-transform: uppercase; text-decoration: none;
+  border-radius: 3px; border: 1px solid var(--accent);
+  background: var(--accent); color: var(--accent-ink);
+  box-shadow: var(--shadow);
+  transition: transform 0.16s cubic-bezier(0.2, 0.9, 0.25, 1), filter 0.16s ease;
+}
+.btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.btn:active { transform: translateY(1px); }
+.btn.ghost {
+  background: transparent; color: var(--accent);
+  border-color: var(--edge-strong);
+}
+/* A command line is not a label, so it does not get shouted in condensed caps. */
+.btn.mono {
+  font: 600 0.85rem/1 var(--font-mono);
+  letter-spacing: 0; text-transform: none;
+}
+.btn svg { width: 1.05em; height: 1.05em; flex: none; }
+
+/* --- Hero tool ----------------------------------------------------------- */
+.hero-tool { width: 100%; max-width: 30rem; margin-inline: auto; display: block; }
+.hero-tool svg { display: block; width: 100%; height: auto; overflow: visible; }
+.tool-line { fill: none; stroke: var(--ink); stroke-width: 5; stroke-linejoin: round; stroke-linecap: round; }
+.tool-ghost { fill: none; stroke: var(--accent); stroke-width: 3.5; opacity: 0.45; stroke-linejoin: round; stroke-linecap: round; }
+.tool-fill { fill: var(--surface); opacity: 0.55; }
+.bench { stroke: var(--edge-strong); stroke-width: 2.5; stroke-linecap: round; fill: none; }
+.turner { transform-box: view-box; transform-origin: 348px 120px; transition: transform 0.34s cubic-bezier(0.34, 1.3, 0.5, 1); }
+
+/* --- Section navigation -------------------------------------------------- */
+.rail { margin: 2rem 0 0; }
+.rail h2 {
+  font: 700 0.72rem/1 var(--font-head); letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--ink-soft); margin: 0 0 0.6rem;
+}
+.rail ul { list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0; padding: 0; }
+.rail a {
+  display: block; padding: 0.34rem 0.72rem; border-radius: 2px;
+  background: var(--surface); border: 1px solid var(--edge);
+  color: var(--ink); text-decoration: none;
+  font: 700 0.78rem/1.3 var(--font-head); letter-spacing: 0.08em; text-transform: uppercase;
+}
+.rail a:hover { border-color: var(--accent); color: var(--accent); }
+
+/* --- Main ---------------------------------------------------------------- */
+main { padding: 2.75rem 0 1rem; position: relative; }
+.lede {
+  border-left: 3px solid var(--accent);
+  padding-left: 1rem; margin: 0 0 2.5rem;
+  color: var(--ink-soft); max-width: 42rem;
+}
+
+section { margin: 0 0 3rem; scroll-margin-top: 1.5rem; }
+code.inline {
+  font: 0.9em/1 var(--font-mono);
+  background: var(--surface); border: 1px solid var(--edge);
+  border-radius: 3px; padding: 0.15em 0.35em; color: var(--ink);
+}
+.head { display: flex; align-items: center; gap: 0.7rem; margin: 0 0 0.25rem; }
+.head h2 {
+  font: 700 clamp(1.4rem, 5vw, 1.9rem)/1.1 var(--font-head);
+  letter-spacing: 0.06em; text-transform: uppercase; margin: 0;
+  font-stretch: 87.5%;
+}
+.head .anchor {
+  margin-left: auto; text-decoration: none; color: var(--edge-strong);
+  font: 700 0.8rem/1 var(--font-mono); opacity: 0; transition: opacity 0.15s;
+}
+.head:hover .anchor, .anchor:focus { opacity: 1; color: var(--accent); }
+.head + hr {
+  border: 0; height: 2px; margin: 0 0 1.25rem;
+  background: repeating-linear-gradient(90deg, var(--edge) 0 6px, transparent 6px 10px);
+}
+.glyph { width: 2rem; height: 2rem; flex: none; color: var(--accent); }
+.glyph svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.glyph :is(path, rect, circle) {
+  fill: none; stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.note { color: var(--ink-soft); margin: 0 0 0.7rem; max-width: 44rem; }
+
+/* --- Code ---------------------------------------------------------------- */
+.snippet {
+  position: relative; margin: 0 0 1.4rem;
+  background: var(--code-bg);
+  border: 1px solid var(--code-edge);
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+}
+.snippet::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 2px;
+  background: linear-gradient(90deg, var(--accent-bright), transparent 55%);
+  border-radius: 4px 4px 0 0;
+}
+.snippet pre {
+  margin: 0; padding: 1rem 1.1rem; overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.snippet code {
+  font: 0.875rem/1.7 var(--font-mono);
+  color: var(--code-ink);
+  white-space: pre;
+  tab-size: 2;
+}
+@media (min-width: 40rem) { .snippet pre { padding-right: 6.5rem; } }
+.snippet .c { color: var(--tok-comment); font-style: italic; }
+.snippet .s { color: var(--tok-string); }
+.snippet .n { color: var(--tok-number); }
+.snippet .y { color: var(--tok-symbol); }
+.snippet .k { color: var(--tok-const); font-weight: 600; }
+.snippet .t { color: var(--tok-const); }
+.snippet .m { color: var(--tok-method); }
+.snippet .p { color: var(--tok-punc); }
+
+.copy {
+  position: absolute; top: 0.5rem; right: 0.5rem;
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  padding: 0.32rem 0.6rem;
+  background: #1A2126; color: #C6CED4;
+  border: 1px solid #333C43; border-radius: 3px;
+  font: 700 0.68rem/1 var(--font-head); letter-spacing: 0.1em; text-transform: uppercase;
+  cursor: pointer;
+}
+.copy:hover { border-color: var(--accent-bright); color: #F3D5AE; }
+.copy svg { width: 13px; height: 13px; display: block; overflow: visible; }
+.copy svg path { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linejoin: round; }
+.copy .socket { transform-box: fill-box; transform-origin: center; }
+.copy.done { color: #F0B968; border-color: #7A5620; }
+@media (max-width: 39.99rem) {
+  .copy { position: static; margin: 0.5rem 0.5rem 0 auto; display: flex; width: max-content; }
+  .snippet { display: flex; flex-direction: column-reverse; }
+}
+
+/* --- Footer -------------------------------------------------------------- */
+footer {
+  margin-top: 2rem; padding: 2.25rem 0 3rem;
+  border-top: 1px solid var(--edge);
+  background: linear-gradient(180deg, var(--bg) 0%, var(--surface-2) 100%);
+  position: relative;
+}
+footer p { color: var(--ink-soft); max-width: 40rem; }
+.foot-links { display: flex; flex-wrap: wrap; gap: 0.7rem; margin: 1.1rem 0 0; }
+
+/* --- Motion -------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+  /* The hero wrench is inked on, outer line first, then the hex it is about to turn. */
+  .drawn { stroke-dasharray: 100; stroke-dashoffset: 100; animation: ink 1.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+  .drawn.late { animation-delay: 0.75s; }
+  @keyframes ink { to { stroke-dashoffset: 0; } }
+
+  /* A quarter turn, then the tool settles back the way a wrench does when you
+     let go of it. Slight overshoot, no bounce. */
+  .hero-tool:hover .turner, .hero-tool:focus-within .turner { transform: rotate(-11deg); }
+
+  /* Only hidden when the script that reveals them is actually running. */
+  .js main section { opacity: 0; transform: translateY(14px); transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.2, 0.9, 0.25, 1); }
+  .js main section.seen { opacity: 1; transform: none; }
+
+  .glyph :is(g, path, rect, circle) { transition: transform 0.26s cubic-bezier(0.2, 0.9, 0.25, 1); transform-box: view-box; }
+  /* Each tool does the one thing it does. */
+  .head:hover .g-wrench .turn { transform: rotate(-28deg); transform-origin: 16px 16px; }
+  .head:hover .g-latch .hasp { animation: latch 0.42s cubic-bezier(0.25, 0.8, 0.3, 1.4); }
+  @keyframes latch { 0% { transform: translateY(0); } 38% { transform: translateY(-3px); } 100% { transform: translateY(0); } }
+  .head:hover .g-tape .blade-out { transform: scaleX(1.42); transform-origin: 18px 16px; }
+  .head:hover .g-pencil .lead { animation: tick 0.4s ease-in-out; }
+  @keyframes tick { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(1.6px, 1.6px); } }
+  .head:hover .g-clip .clip { transform: translateY(-1.6px); }
+  .head:hover .g-truck .body { animation: lurch 0.5s cubic-bezier(0.3, 0.9, 0.3, 1); }
+  @keyframes lurch { 0% { transform: translateX(0); } 30% { transform: translateX(-2px); } 100% { transform: translateX(0); } }
+  .head:hover .g-hammer .strike { animation: tap 0.42s cubic-bezier(0.3, 0.1, 0.2, 1.5); }
+  @keyframes tap { 0%, 100% { transform: rotate(0); } 45% { transform: rotate(-24deg); } }
+  .g-hammer .strike { transform-origin: 16px 27px; }
+
+  /* The copy button seats like a socket: a sixth of a turn and it is on. */
+  .copy.done .socket { transform: rotate(60deg); transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.25, 1.5); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tape { display: none; }
+}
+</style>
+<script>document.documentElement.className = 'js';</script>
+</head>
+<body>
+
+<a class='skip' href='#methods'>Skip to the methods</a>
+
+<div class='tape' aria-hidden='true'><div class='blade' id='blade'></div></div>
+
+<header class='hero'>
+  <div class='wrap'>
+    <div class='hero-grid'>
+      <div>
+        <p class='plate'><span class='rivet'></span>Ruby gem &middot; 2.2.0 &middot; MIT<span class='rivet'></span></p>
+        <h1>jbr</h1>
+        <p class='tagline'>A Ruby client for the Jobber GraphQL API.</p>
+        <p class='sub'>It needs nothing but the standard library. One more tool on the belt: hand it OAuth credentials and it hands back requests, quotes, jobs, invoices, visits and webhook events.</p>
+        <div class='actions'>
+          <a class='btn' href='https://github.com/claudiob/jbr'>
+            <svg viewBox='0 0 16 16' aria-hidden='true' fill='currentColor'><path d='M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z'/></svg>
+            Full README on GitHub
+          </a>
+          <a class='btn ghost' href='https://rubygems.org/gems/jbr'>
+            <svg viewBox='0 0 16 16' aria-hidden='true' fill='none' stroke='currentColor' stroke-width='1.6' stroke-linejoin='round'><path d='M4.6 1.8h6.8l3.1 4.4L8 14.3 1.5 6.2z'/><path d='M1.5 6.2h13'/><path d='m4.6 1.8 3.4 4.4 3.4-4.4M8 6.2v8.1'/></svg>
+            Get it on RubyGems
+          </a>
+        </div>
+      </div>
+
+      <div class='hero-tool'>
+        <!-- A combination wrench, inked twice so the line reads as drawn rather than
+             plotted, seated on a hex it is about to break loose. Hover turns it. -->
+        <svg viewBox='0 0 440 240' role='img' aria-labelledby='hero-title'>
+          <title id='hero-title'>A line drawing of a combination wrench resting on a workbench, its box end seated over a hex nut.</title>
+          <path class='bench' d='M 8 214 C 120 210 300 212 432 208'/>
+          <path class='bench' d='M 40 224 L 46 214 M 384 222 L 390 210' />
+          <g class='turner'>
+            <g transform='rotate(-14 220 120)'>
+              <path class='tool-fill' d='M 28 86 C 32 83 38 82 46 83 L 104 96 C 110 98 112 101 112 106 L 300 106 C 306 92 322 76 348 76 A 44 44 0 1 1 348 164 C 322 164 306 148 300 134 L 112 134 C 112 139 110 142 104 144 L 46 157 C 38 158 32 157 28 154 L 28 138 L 90 130 C 96 129 96 111 90 110 L 28 102 Z'/>
+              <path class='tool-ghost drawn' pathLength='100' d='M 30 88 C 34 85 40 84 48 85 L 106 98 C 112 100 114 103 114 108 L 302 108 C 308 94 324 78 350 78 A 44 44 0 1 1 350 166 C 324 166 308 150 302 136 L 114 136 C 114 141 112 144 106 146 L 48 159 C 40 160 34 159 30 156 L 30 140 L 92 132 C 98 131 98 113 92 112 L 30 104 Z'/>
+              <path class='tool-line drawn' pathLength='100' d='M 28 86 C 32 83 38 82 46 83 L 104 96 C 110 98 112 101 112 106 L 300 106 C 306 92 322 76 348 76 A 44 44 0 1 1 348 164 C 322 164 306 148 300 134 L 112 134 C 112 139 110 142 104 144 L 46 157 C 38 158 32 157 28 154 L 28 138 L 90 130 C 96 129 96 111 90 110 L 28 102 Z'/>
+              <path class='tool-line drawn late' pathLength='100' d='M 372 120 L 360 140.78 L 336 140.78 L 324 120 L 336 99.22 L 360 99.22 Z'/>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <nav class='rail' aria-labelledby='rail-title'>
+      <h2 id='rail-title'>What is in the box</h2>
+      <ul>
+        <li><a href='#credentials'>Credentials</a></li>
+        <li><a href='#requests'>Requests</a></li>
+        <li><a href='#quotes'>Quotes</a></li>
+        <li><a href='#jobs'>Jobs</a></li>
+        <li><a href='#invoices'>Invoices</a></li>
+        <li><a href='#visits'>Visits</a></li>
+        <li><a href='#events'>Events</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id='methods'>
+  <div class='wrap'>
+    <p class='lede'>Every method the gem exposes, in the order you reach for them. Installation, the mocking helpers for your test suite, and the contributing notes are all in the <a href='https://github.com/claudiob/jbr'>README</a>.</p>
+
+    <section id='credentials'>
+      <div class='head'>
+        <span class='glyph' aria-hidden='true'><svg viewBox='0 0 32 32' class='g-latch'><rect x='5.5' y='14.5' width='21' height='13' rx='2.5'/><path class='hasp' d='M 11 14.5 V 10.5 a 5 5 0 0 1 10 0 v 4'/><circle cx='16' cy='21' r='1.6'/></svg></span>
+        <h2>Credentials</h2>
+        <a class='anchor' href='#credentials' aria-label='Link to Credentials'>#</a>
+      </div>
+      <hr>
+
+      <p class='note'>Generate the URL for Jobber users to authorize the app:</p>
+      <div class='snippet'><pre><code>url = Jbr.oauth_url_for redirect_uri:, state:
+url # =&gt; 'https://api.getjobber.com/api/oauth/authorize?state=...&amp;redirect_uri=...'</code></pre></div>
+
+      <p class='note'>Create credentials with a code and a redirect URI:</p>
+      <div class='snippet'><pre><code>oauth = Jbr.create_oauth code:, redirect_uri:</code></pre></div>
+
+      <p class='note'>Initialize with existing credentials:</p>
+      <div class='snippet'><pre><code>oauth = Jbr.oauth_for access_token:, refresh_token:, expires_at:, account_id:</code></pre></div>
+
+      <p class='note'>Access OAuth attributes:</p>
+      <div class='snippet'><pre><code>oauth.access_token # =&gt; 'eyJhbGciOiJIUzI1NiJ'
+oauth.refresh_token # =&gt; 'ea02775958c5fca28d'
+oauth.expires_at # =&gt; 2026-05-22 14:32:53
+oauth.account_id # =&gt; 'Z2lkOi8vSm9iYmV'</code></pre></div>
+
+      <p class='note'>Revoke credentials:</p>
+      <div class='snippet'><pre><code>oauth.delete</code></pre></div>
+    </section>
+
+    <section id='requests'>
+      <div class='head'>
+        <span class='glyph' aria-hidden='true'><svg viewBox='0 0 32 32' class='g-pencil'><g transform='rotate(-35 16 16)'><path d='M 12 5.5 h 8 v 15 l -4 6 l -4 -6 z'/><path d='M 12 20.5 h 8'/><path class='lead' d='M 16 20.5 v 5.2'/></g></svg></span>
+        <h2>Requests</h2>
+        <a class='anchor' href='#requests' aria-label='Link to Requests'>#</a>
+      </div>
+      <hr>
+
+      <p class='note'>Create a Jobber request, finding or creating a Client with a matching phone number:</p>
+      <div class='snippet'><pre><code>request = oauth.requests.create first_name: 'Jane', last_name: 'Doe', phone: '5553335555',
+  email: 'jane@example.com', title: 'New Plumber Lead', instructions: 'Needs new faucet'
+request.id # =&gt; 'Z2lkOi8vSm9iYmVyL'
+request.client_id # =&gt; 'MwMTU0Mg'</code></pre></div>
+    </section>
+
+    <section id='quotes'>
+      <div class='head'>
+        <span class='glyph' aria-hidden='true'><svg viewBox='0 0 32 32' class='g-tape'><rect x='3.5' y='11.5' width='15' height='15' rx='4'/><circle cx='11' cy='19' r='3.2'/><g class='blade-out'><path d='M 18.5 15 h 9.5'/><path d='M 28 11.8 v 6.4'/></g></svg></span>
+        <h2>Quotes</h2>
+        <a class='anchor' href='#quotes' aria-label='Link to Quotes'>#</a>
+      </div>
+      <hr>
+
+      <p class='note'>Fetch a quote from Jobber:</p>
+      <div class='snippet'><pre><code>quote = oauth.quotes.find 'Z2lkOi8vS'
+quote.id # =&gt; 'Z2lkOi8vS'
+quote.request_id # =&gt; 'Z2lkOi8vSm9iYmVyL'</code></pre></div>
+    </section>
+
+    <section id='jobs'>
+      <div class='head'>
+        <span class='glyph' aria-hidden='true'><svg viewBox='0 0 32 32' class='g-wrench'><path class='turn' d='M 25.5 4.5 L 21 9 L 23 11 L 27.5 6.5 A 8 8 0 0 1 17.5 16.5 L 8.5 25.5 A 3 3 0 0 1 4.5 21.5 L 13.5 12.5 A 8 8 0 0 1 23.5 2.5 Z'/></svg></span>
+        <h2>Jobs</h2>
+        <a class='anchor' href='#jobs' aria-label='Link to Jobs'>#</a>
+      </div>
+      <hr>
+
+      <p class='note'>Fetch a job from Jobber:</p>
+      <div class='snippet'><pre><code>job = oauth.jobs.find 'Njc5MTk5'
+job.id # =&gt; 'Z2lkOi8vS'
+job.quote_id # =&gt; 'Z2lkOi8vS'
+job.scheduled_at # =&gt; 2026-05-14 23:02:52
+job.completed_at # =&gt; 2026-05-18 11:36:13</code></pre></div>
+    </section>
+
+    <section id='invoices'>
+      <div class='head'>
+        <span class='glyph' aria-hidden='true'><svg viewBox='0 0 32 32' class='g-clip'><rect x='6.5' y='6.5' width='19' height='21' rx='3'/><rect class='clip' x='11.5' y='3.5' width='9' height='5' rx='1.8'/><path d='M 11 15 h 10'/><path d='M 11 20 h 7'/></svg></span>
+        <h2>Invoices</h2>
+        <a class='anchor' href='#invoices' aria-label='Link to Invoices'>#</a>
+      </div>
+      <hr>
+
+      <p class='note'>Fetch a non-draft invoice from Jobber:</p>
+      <div class='snippet'><pre><code>invoice = oauth.invoices.find 'MjU3ODA0'
+invoice.id # =&gt; 'MjU3ODA0'
+invoice.job_id # =&gt; 'Z2lkOi8vS'
+invoice.total # =&gt; '40.30'
+invoice.issued_at # =&gt; 2026-05-22 12:12:53
+invoice.completed_at # =&gt; 2026-05-22 14:32:53</code></pre></div>
+    </section>
+
+    <section id='visits'>
+      <div class='head'>
+        <span class='glyph' aria-hidden='true'><svg viewBox='0 0 32 32' class='g-truck'><g class='body'><path d='M 2.5 21 v -8 h 12 l 3 -4 h 5 l 4 5 h 3 v 7'/><path d='M 2.5 21 h 3'/><path d='M 11.5 21 h 9'/><path d='M 26.5 21 h 3'/><circle cx='8.5' cy='21.5' r='3'/><circle cx='23.5' cy='21.5' r='3'/></g><path d='M 1 25.5 h 30'/></svg></span>
+        <h2>Visits</h2>
+        <a class='anchor' href='#visits' aria-label='Link to Visits'>#</a>
+      </div>
+      <hr>
+
+      <p class='note'>Fetch the visits scheduled from now on, oldest first. Jobber is asked for a page at a time, and only once the page before it runs out, so <code class='inline'>first</code> costs one request where <code class='inline'>to_a</code> costs as many as the account has pages:</p>
+      <div class='snippet'><pre><code>visits = oauth.visits.upcoming # =&gt; an Enumerator, nothing fetched yet
+visit = visits.first
+visit.id # =&gt; 'Z2lkOi8vS'
+visit.title # =&gt; 'Furnace tune-up'
+visit.job_id # =&gt; 'Z2lkOi8vS'
+visit.property_id # =&gt; 'Z2lkOi8vS'
+visit.client # =&gt; { id: 'Z2lkOi8vS', first_name: 'Jane', last_name: 'Doe',
+             #      phone: '5553335555', email: 'jane@example.com' }
+visit.address # =&gt; { street: '1 Main St', city: 'Raleigh', state: 'NC', zip: '27601',
+              #      latitude: 35.77, longitude: -78.63 }
+visit.starts_at # =&gt; 2026-08-09 14:00:00
+visit.ends_at # =&gt; 2026-08-09 16:00:00
+visit.all_day? # =&gt; false
+visit.client_confirmed? # =&gt; true</code></pre></div>
+    </section>
+
+    <section id='events'>
+      <div class='head'>
+        <span class='glyph' aria-hidden='true'><svg viewBox='0 0 32 32' class='g-hammer'><g class='strike'><g transform='rotate(35 16 16)'><rect x='7' y='5.5' width='18' height='7' rx='2.5'/><path d='M 16 12.5 v 14'/><path d='M 13 12.5 h 6'/></g></g></svg></span>
+        <h2>Events</h2>
+        <a class='anchor' href='#events' aria-label='Link to Events'>#</a>
+      </div>
+      <hr>
+
+      <p class='note'>Parse the payload of a Jobber event webhook:</p>
+      <div class='snippet'><pre><code>event = Jbr::Event.new data: { webHookEvent: { topic: 'JOB_CREATE', appId: 'app-1',
+  accountId: 'account-1', itemId: 'job-1', occurredAt: '2026-05-22T15:46:33Z' } }
+event.account_id # =&gt; 'account-1'
+event.item_id # =&gt; 'job-1'</code></pre></div>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class='wrap'>
+    <p>That is the whole belt. The gem also ships mocking helpers so a test suite never touches Jobber, and the install and contributing instructions live upstream.</p>
+    <div class='foot-links'>
+      <a class='btn' href='https://github.com/claudiob/jbr'>README &amp; mocks on GitHub</a>
+      <a class='btn ghost mono' href='https://rubygems.org/gems/jbr'>gem install jbr</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+  var still = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  /* ---- Ruby, highlighted by hand ---------------------------------------
+     One pass, one alternation, longest-first where it matters: a comment
+     swallows its line before a date inside it can be read as a number, and
+     a string swallows the OAuth URL before its colons become symbols. The
+     text itself is never rewritten, only wrapped, so copying still yields
+     exactly what the README says. */
+  var RUBY = new RegExp([
+    '(#[^\\n]*)',                                             /* comment */
+    "('(?:\\\\.|[^'\\\\])*'|\"(?:\\\\.|[^\"\\\\])*\")",       /* string */
+    '(\\b\\d+(?:\\.\\d+)?\\b)',                               /* number */
+    '([a-z_][A-Za-z0-9_]*:(?!:))',                            /* symbol key */
+    '(\\b(?:do|end|def|class|module|require|nil|true|false|self|if|else|return)\\b)',
+    '(\\b[A-Z][A-Za-z0-9_]*)',                                /* constant */
+    '(\\.[A-Za-z_][A-Za-z0-9_]*[?!]?)',                       /* method call */
+    '(\\b[a-z_][A-Za-z0-9_]*[?!]?)',                          /* plain name */
+    '([{}()\\[\\]<>=|&+\\-*/%!?:,.]+)'                        /* punctuation */
+  ].join('|'), 'g');
+  var CLASSES = ['c', 's', 'n', 'y', 'k', 't', 'm', '', 'p'];
+
+  function esc(text) {
+    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function paint(src) {
+    var out = '', last = 0, hit, group, cls;
+    RUBY.lastIndex = 0;
+    while ((hit = RUBY.exec(src)) !== null) {
+      if (hit.index > last) { out += esc(src.slice(last, hit.index)); }
+      cls = '';
+      for (group = 1; group < hit.length; group++) {
+        if (hit[group] !== undefined) { cls = CLASSES[group - 1]; break; }
+      }
+      if (cls === 'm') {
+        out += '<span class="p">.</span><span class="m">' + esc(hit[0].slice(1)) + '</span>';
+      } else if (cls) {
+        out += '<span class="' + cls + '">' + esc(hit[0]) + '</span>';
+      } else {
+        out += esc(hit[0]);
+      }
+      last = hit.index + hit[0].length;
+    }
+    return out + esc(src.slice(last));
+  }
+
+  /* ---- Copy, with a socket that seats ---------------------------------- */
+  var SOCKET = '<svg viewBox="0 0 16 16" aria-hidden="true">' +
+    '<path class="socket" d="M8 1.4 13.7 4.7v6.6L8 14.6 2.3 11.3V4.7z"/>' +
+    '<path class="socket" d="M8 5 11 6.7v3.4L8 11.8 5 10.1V6.7z"/></svg>';
+
+  var blocks = document.querySelectorAll('.snippet');
+  Array.prototype.forEach.call(blocks, function (block) {
+    var code = block.querySelector('code');
+    var source = code.textContent;
+    code.innerHTML = paint(source);
+
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'copy';
+    button.innerHTML = SOCKET + '<span>Copy</span>';
+    var label = button.querySelector('span');
+    var revert;
+
+    button.addEventListener('click', function () {
+      function seated() {
+        button.classList.add('done');
+        label.textContent = 'Copied';
+        window.clearTimeout(revert);
+        revert = window.setTimeout(function () {
+          button.classList.remove('done');
+          label.textContent = 'Copy';
+        }, 1800);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(source).then(seated, fallback);
+      } else {
+        fallback();
+      }
+      /* Insecure origins and older Safari get the textarea trick instead, so
+         "Copy" is never a button that quietly does nothing. */
+      function fallback() {
+        var pad = document.createElement('textarea');
+        pad.value = source;
+        pad.setAttribute('readonly', '');
+        pad.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+        document.body.appendChild(pad);
+        pad.select();
+        try { document.execCommand('copy'); seated(); } catch (nope) { label.textContent = 'Select it'; }
+        document.body.removeChild(pad);
+      }
+    });
+
+    block.appendChild(button);
+  });
+
+  /* ---- The tape measure ------------------------------------------------- */
+  var blade = document.getElementById('blade');
+  var pending = false;
+
+  function pull() {
+    pending = false;
+    var run = document.documentElement.scrollHeight - window.innerHeight;
+    blade.style.width = (run > 0 ? Math.min(1, window.scrollY / run) * 100 : 0) + '%';
+  }
+
+  function onScroll() {
+    if (pending) { return; }
+    pending = true;
+    window.requestAnimationFrame(pull);
+  }
+
+  if (!still.matches) {
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    pull();
+  }
+
+  /* ---- Sections settle into place as they come up ----------------------- */
+  var sections = document.querySelectorAll('main section');
+  if (still.matches || !('IntersectionObserver' in window)) {
+    Array.prototype.forEach.call(sections, function (s) { s.classList.add('seen'); });
+  } else {
+    var watcher = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) { return; }
+        entry.target.classList.add('seen');
+        watcher.unobserve(entry.target);
+      });
+    }, { rootMargin: '0px 0px -12% 0px' });
+    Array.prototype.forEach.call(sections, function (s) { watcher.observe(s); });
+  }
+})();
+</script>
+</body>
+</html>

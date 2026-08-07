@@ -1,0 +1,15 @@
+{
+  "name": "jbr — a Ruby client for the Jobber API",
+  "short_name": "jbr",
+  "description": "One more tool on the belt: a Ruby client for the Jobber GraphQL API that needs nothing but the standard library.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "theme_color": "#15181B",
+  "background_color": "#15181B",
+  "icons": [
+    { "src": "web-app-manifest-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "web-app-manifest-512x512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

@@ -5,8 +5,8 @@ class VisitsTest < Minitest::Test
     address = { 'street1' => '1 Main St', 'city' => 'Raleigh', 'province' => 'NC',
       'postalCode' => '27601',
     }
-    job = { 'id' => 'job-01', 'property' => { 'address' => address } }
-    node = { 'id' => 'visit-01', 'title' => 'Tune-up', 'job' => job,
+    node = { 'id' => 'visit-01', 'title' => 'Tune-up', 'job' => { 'id' => 'job-01' },
+      'property' => { 'address' => address },
       'startAt' => '2026-08-09T14:00:00Z', 'endAt' => '2026-08-09T16:00:00Z',
     }
     stub_graphql 'visits' => { 'nodes' => [ node ], 'pageInfo' => { 'hasNextPage' => false } }
@@ -22,8 +22,8 @@ class VisitsTest < Minitest::Test
     assert_equal Time.utc(2026, 8, 9, 16), visit.ends_at
   end
 
-  def test_a_visit_off_a_job_with_no_property_has_no_address
-    node = { 'id' => 'visit-01', 'job' => { 'id' => 'job-01', 'property' => nil } }
+  def test_a_visit_with_no_property_has_no_address
+    node = { 'id' => 'visit-01', 'property' => nil }
     stub_graphql 'visits' => { 'nodes' => [ node ], 'pageInfo' => { 'hasNextPage' => false } }
 
     assert_empty oauth.visits.upcoming.first.address

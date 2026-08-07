@@ -8,7 +8,8 @@ module Jbr
         visits(first: 40, after: $after, filter: { startAt: { after: $from } }) {
           nodes {
             id title startAt endAt
-            job { id property { address { #{Property::FIELDS.keys.join ' '} } } }
+            job { id }
+            property { address { #{Property::FIELDS.keys.join ' '} } }
           }
           pageInfo { hasNextPage endCursor }
         }
@@ -40,9 +41,9 @@ module Jbr
     # @return [String, nil] the ID of the job the visit belongs to.
     def job_id = @node.dig 'job', 'id'
 
-    # The property the work happens at, which Jobber holds on the job, not on the visit.
+    # Where the work happens, in the fields {Property} takes.
     # @return [Hash] any of :street, :city, :state and :zip.
-    def address = Property.fields_from @node.dig('job', 'property', 'address')
+    def address = Property.fields_from @node.dig('property', 'address')
 
     # @return [Time, nil] the visit start time
     def starts_at

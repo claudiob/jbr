@@ -4,6 +4,8 @@
   Each carries its job, its times and the address of the property it happens at, in the
   same fields Jbr::Property takes. It answers an Enumerator, so a page is read only once
   the one before it runs out
+- [New] Read a property's latitude and longitude, beside its street rather than under a
+  hash of their own. Every query that reads a property asks for them
 
 ## [2.0.0] - 2026-08-07
 

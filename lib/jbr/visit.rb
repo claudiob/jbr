@@ -9,7 +9,7 @@ module Jbr
           nodes {
             id title startAt endAt
             job { id }
-            property { address { #{Property::FIELDS.keys.join ' '} } }
+            property { address { #{Property::SELECTION} } }
           }
           pageInfo { hasNextPage endCursor }
         }
@@ -41,8 +41,8 @@ module Jbr
     # @return [String, nil] the ID of the job the visit belongs to.
     def job_id = @node.dig 'job', 'id'
 
-    # Where the work happens, in the fields {Property} takes.
-    # @return [Hash] any of :street, :city, :state and :zip.
+    # Where the work happens, in the fields {Property} carries.
+    # @return [Hash] any of :street, :city, :state, :zip, :latitude and :longitude.
     def address = Property.fields_from @node.dig('property', 'address')
 
     # @return [Time, nil] the visit start time

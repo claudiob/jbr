@@ -3,7 +3,7 @@ require 'test_helper'
 class VisitsTest < Minitest::Test
   def test_a_visit_carries_its_job_its_address_and_its_times
     address = { 'street1' => '1 Main St', 'city' => 'Raleigh', 'province' => 'NC',
-      'postalCode' => '27601',
+      'postalCode' => '27601', 'coordinates' => { 'latitude' => 35.77, 'longitude' => -78.63 },
     }
     node = { 'id' => 'visit-01', 'title' => 'Tune-up', 'job' => { 'id' => 'job-01' },
       'property' => { 'address' => address },
@@ -16,8 +16,9 @@ class VisitsTest < Minitest::Test
     assert_equal 'visit-01', visit.id
     assert_equal 'Tune-up', visit.title
     assert_equal 'job-01', visit.job_id
-    assert_equal({ street: '1 Main St', city: 'Raleigh', state: 'NC', zip: '27601' },
-      visit.address)
+    assert_equal({ street: '1 Main St', city: 'Raleigh', state: 'NC', zip: '27601',
+                   latitude: 35.77, longitude: -78.63,
+    }, visit.address)
     assert_equal Time.utc(2026, 8, 9, 14), visit.starts_at
     assert_equal Time.utc(2026, 8, 9, 16), visit.ends_at
   end

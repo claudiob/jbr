@@ -14,6 +14,12 @@ module Jbr
     # What Jobber calls each address field, against what a caller passes.
     FIELDS = { street1: :street, city: :city, province: :state, postalCode: :zip }
 
+    # The two Jobber tucks inside the address and a property carries beside the street.
+    COORDINATES = %i[latitude longitude]
+
+    # The address as Jobber answers it, asked for wherever a property is read.
+    SELECTION = "#{FIELDS.keys.join ' '} coordinates { #{COORDINATES.join ' '} }"
+
     # The fields a match is made on. City and state are written but never matched:
     # Jobber holds whatever was typed, so "NC" and "North Carolina" -- or "Winston Salem"
     # and "Winston-Salem" -- would read as two homes. The ZIP already places the home.
@@ -26,11 +32,15 @@ module Jbr
       FIELDS.to_h { |jobber, ours| [ jobber, fields[ours] ] }.compact
     end
 
-    # The address fields a caller passes, from the address as Jobber holds it.
+    # The fields a caller reads, from the address as Jobber holds it.
     # @param address [Hash, nil] the address Jobber answered, if it answered one.
-    # @return [Hash] any of :street, :city, :state and :zip, without the ones Jobber left out.
+    # @return [Hash] any of :street, :city, :state, :zip, :latitude and :longitude,
+    #   without the ones Jobber left out.
     def self.fields_from(address)
-      FIELDS.to_h { |jobber, ours| [ ours, (address || {})[jobber.to_s] ] }.compact
+      address ||= {}
+      coordinates = address['coordinates'] || {}
+      FIELDS.to_h { |jobber, ours| [ ours, address[jobber.to_s] ] }.
+        merge(COORDINATES.to_h { |ours| [ ours, coordinates[ours.to_s] ] }).compact
     end
 
     # Reach the property at an address, adding one when none of the client's matches.

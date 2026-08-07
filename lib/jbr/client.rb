@@ -5,7 +5,7 @@ module Jbr
     LOOKUP = <<~GRAPHQL
       query($searchTerm: String!) {
         clientPhones(first: 1, searchTerm: $searchTerm) { nodes {
-          client { id updatedAt clientProperties { nodes { id address { street1 city province postalCode } }} }
+          client { id updatedAt clientProperties { nodes { id address { #{Property::SELECTION} } }} }
         } }
       }
     GRAPHQL

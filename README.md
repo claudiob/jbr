@@ -98,7 +98,8 @@ visit = visits.first
 visit.id # => 'Z2lkOi8vS'
 visit.title # => 'Furnace tune-up'
 visit.job_id # => 'Z2lkOi8vS'
-visit.address # => { street: '1 Main St', city: 'Raleigh', state: 'NC', zip: '27601' }
+visit.address # => { street: '1 Main St', city: 'Raleigh', state: 'NC', zip: '27601',
+              #      latitude: 35.77, longitude: -78.63 }
 visit.starts_at # => 2026-08-09 14:00:00
 visit.ends_at # => 2026-08-09 16:00:00
 ```

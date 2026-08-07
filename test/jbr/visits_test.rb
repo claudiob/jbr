@@ -6,7 +6,7 @@ class VisitsTest < Minitest::Test
       'postalCode' => '27601', 'coordinates' => { 'latitude' => 35.77, 'longitude' => -78.63 },
     }
     node = { 'id' => 'visit-01', 'title' => 'Tune-up', 'job' => { 'id' => 'job-01' },
-      'property' => { 'address' => address },
+      'property' => { 'address' => address }, 'allDay' => true, 'clientConfirmed' => false,
       'startAt' => '2026-08-09T14:00:00Z', 'endAt' => '2026-08-09T16:00:00Z',
     }
     stub_graphql 'visits' => { 'nodes' => [ node ], 'pageInfo' => { 'hasNextPage' => false } }
@@ -21,6 +21,8 @@ class VisitsTest < Minitest::Test
     }, visit.address)
     assert_equal Time.utc(2026, 8, 9, 14), visit.starts_at
     assert_equal Time.utc(2026, 8, 9, 16), visit.ends_at
+    assert visit.all_day?
+    refute visit.client_confirmed?
   end
 
   def test_a_visit_with_no_property_has_no_address

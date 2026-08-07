@@ -7,7 +7,7 @@ module Jbr
       query($after: String, $from: ISO8601DateTime!) {
         visits(first: 40, after: $after, filter: { startAt: { after: $from } }) {
           nodes {
-            id title startAt endAt
+            id title startAt endAt allDay clientConfirmed
             job { id }
             property { address { #{Property::SELECTION} } }
           }
@@ -40,6 +40,12 @@ module Jbr
 
     # @return [String, nil] the ID of the job the visit belongs to.
     def job_id = @node.dig 'job', 'id'
+
+    # @return [Boolean, nil] whether the visit takes the whole day rather than an hour of it.
+    def all_day? = @node['allDay']
+
+    # @return [Boolean, nil] whether the client has confirmed the visit.
+    def client_confirmed? = @node['clientConfirmed']
 
     # Where the work happens, in the fields {Property} carries.
     # @return [Hash] any of :street, :city, :state, :zip, :latitude and :longitude.

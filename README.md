@@ -102,6 +102,8 @@ visit.address # => { street: '1 Main St', city: 'Raleigh', state: 'NC', zip: '27
               #      latitude: 35.77, longitude: -78.63 }
 visit.starts_at # => 2026-08-09 14:00:00
 visit.ends_at # => 2026-08-09 16:00:00
+visit.all_day? # => false
+visit.client_confirmed? # => true
 ```
 
 ### Events
@@ -170,7 +172,8 @@ Mock successfully fetching upcoming visits:
 ```ruby
 Jbr.mock.visits = [ { id: 'visit-01', title: 'Furnace tune-up', job_id: 'job-01',
   address: { street: '1 Main St', city: 'Raleigh', state: 'NC', zip: '27601' },
-  starts_at: Date.tomorrow.noon, ends_at: Date.tomorrow.end_of_day } ]
+  starts_at: Date.tomorrow.noon, ends_at: Date.tomorrow.end_of_day,
+  all_day: false, client_confirmed: true } ]
 ```
 
 ### Invoices

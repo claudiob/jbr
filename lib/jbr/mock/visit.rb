@@ -17,6 +17,10 @@ module Jbr
 
     def address = @node.fetch :address, {}
 
+    def all_day? = @node[:all_day]
+
+    def client_confirmed? = @node[:client_confirmed]
+
     def starts_at = @node[:starts_at]
 
     def ends_at = @node[:ends_at]

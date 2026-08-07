@@ -1,9 +1,10 @@
 ## [2.1.0] - 2026-08-07
 
 - [New] Fetch the visits an account has scheduled from now on, with oauth.visits.upcoming.
-  Each carries its job, its times and the address of the property it happens at, in the
-  same fields Jbr::Property takes. It answers an Enumerator, so a page is read only once
-  the one before it runs out
+  Each carries its job, its times, whether it takes the whole day, whether the client
+  confirmed it, and the address of the property it happens at, in the same fields
+  Jbr::Property takes. It answers an Enumerator, so a page is read only once the one
+  before it runs out
 - [New] Read a property's latitude and longitude, beside its street rather than under a
   hash of their own. Every query that reads a property asks for them
 

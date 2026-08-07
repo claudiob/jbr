@@ -86,6 +86,22 @@ invoice.issued_at # => 2026-05-22 12:12:53
 invoice.completed_at # => 2026-05-22 14:32:53
 ```
 
+### Visits
+
+Fetch the visits scheduled from now on, oldest first. Jobber is asked for a page at a time,
+and only once the page before it runs out, so `first` costs one request where `to_a` costs
+as many as the account has pages:
+
+```ruby
+visits = oauth.visits.upcoming # => an Enumerator, nothing fetched yet
+visit = visits.first
+visit.id # => 'Z2lkOi8vS'
+visit.title # => 'Furnace tune-up'
+visit.job_id # => 'Z2lkOi8vS'
+visit.starts_at # => 2026-08-09 14:00:00
+visit.ends_at # => 2026-08-09 16:00:00
+```
+
 ### Events
 
 Parse the payload of a Jobber event webhook:
@@ -143,6 +159,15 @@ Mock successfully fetching a job:
 
 ```ruby
 Jbr.mock.job = { id: 'job-01', quote_id: 'quote-01', scheduled_at: Date.tomorrow.noon }
+```
+
+### Visits
+
+Mock successfully fetching upcoming visits:
+
+```ruby
+Jbr.mock.visits = [ { id: 'visit-01', title: 'Furnace tune-up', job_id: 'job-01',
+  starts_at: Date.tomorrow.noon, ends_at: Date.tomorrow.end_of_day } ]
 ```
 
 ### Invoices

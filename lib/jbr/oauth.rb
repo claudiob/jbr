@@ -1,6 +1,5 @@
 module Jbr
-  # Credentials for one Jobber account, and the gateway to everything read or written
-  # with them. An expired access token is refreshed and the call retried once.
+  # Credentials for one Jobber account, and the gateway to all they read or write.
   class OAuth
     # The mutation that revokes the app on the account.
     DISCONNECT_MUTATION = <<~GRAPHQL
@@ -33,6 +32,7 @@ module Jbr
     def jobs = Job.new oauth: self
     def quotes = Quote.new oauth: self
     def requests = Request.new oauth: self
+    def visits = Visit.new oauth: self
 
     # Run a statement, refreshing the access token once if Jobber says it expired.
     # @param statement [String] the query or mutation to run.

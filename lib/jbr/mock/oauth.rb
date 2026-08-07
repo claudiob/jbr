@@ -7,6 +7,7 @@ module Jbr
     def quotes = Mock::Quote.new(oauth: self)
     def requests = Mock::Request.new(oauth: self)
     def account = Mock::Account.new oauth: self
+    def visits = Mock::Visit.new(oauth: self)
 
     # Revoking a mocked token asks nobody.
     def delete; end

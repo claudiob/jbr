@@ -19,6 +19,7 @@ require 'jbr/invoice'
 require 'jbr/job'
 require 'jbr/property'
 require 'jbr/quote'
+require 'jbr/visit'
 
 require 'jbr/mock/oauth'
 require 'jbr/mock/quote'
@@ -27,6 +28,7 @@ require 'jbr/mock/invoice'
 require 'jbr/mock/request'
 require 'jbr/mock/account'
 require 'jbr/mock/url'
+require 'jbr/mock/visit'
 
 require 'jbr/mocking'
 

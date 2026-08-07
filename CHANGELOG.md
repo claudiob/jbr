@@ -1,7 +1,9 @@
 ## [2.1.0] - 2026-08-07
 
 - [New] Fetch the visits an account has scheduled from now on, with oauth.visits.upcoming.
-  It answers an Enumerator, so a page is read only once the one before it runs out
+  Each carries its job, its times and the address of the property the work happens at,
+  in the same fields Jbr::Property takes. It answers an Enumerator, so a page is read
+  only once the one before it runs out
 
 ## [2.0.0] - 2026-08-07
 

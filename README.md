@@ -98,6 +98,7 @@ visit = visits.first
 visit.id # => 'Z2lkOi8vS'
 visit.title # => 'Furnace tune-up'
 visit.job_id # => 'Z2lkOi8vS'
+visit.address # => { street: '1 Main St', city: 'Raleigh', state: 'NC', zip: '27601' }
 visit.starts_at # => 2026-08-09 14:00:00
 visit.ends_at # => 2026-08-09 16:00:00
 ```
@@ -167,6 +168,7 @@ Mock successfully fetching upcoming visits:
 
 ```ruby
 Jbr.mock.visits = [ { id: 'visit-01', title: 'Furnace tune-up', job_id: 'job-01',
+  address: { street: '1 Main St', city: 'Raleigh', state: 'NC', zip: '27601' },
   starts_at: Date.tomorrow.noon, ends_at: Date.tomorrow.end_of_day } ]
 ```
 

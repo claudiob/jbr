@@ -1,8 +1,12 @@
 require 'test_helper'
 
 class VisitsTest < Minitest::Test
-  def test_a_visit_carries_its_job_and_its_times
-    node = { 'id' => 'visit-01', 'title' => 'Tune-up', 'job' => { 'id' => 'job-01' },
+  def test_a_visit_carries_its_job_its_address_and_its_times
+    address = { 'street1' => '1 Main St', 'city' => 'Raleigh', 'province' => 'NC',
+      'postalCode' => '27601',
+    }
+    job = { 'id' => 'job-01', 'property' => { 'address' => address } }
+    node = { 'id' => 'visit-01', 'title' => 'Tune-up', 'job' => job,
       'startAt' => '2026-08-09T14:00:00Z', 'endAt' => '2026-08-09T16:00:00Z',
     }
     stub_graphql 'visits' => { 'nodes' => [ node ], 'pageInfo' => { 'hasNextPage' => false } }
@@ -12,8 +16,17 @@ class VisitsTest < Minitest::Test
     assert_equal 'visit-01', visit.id
     assert_equal 'Tune-up', visit.title
     assert_equal 'job-01', visit.job_id
+    assert_equal({ street: '1 Main St', city: 'Raleigh', state: 'NC', zip: '27601' },
+      visit.address)
     assert_equal Time.utc(2026, 8, 9, 14), visit.starts_at
     assert_equal Time.utc(2026, 8, 9, 16), visit.ends_at
+  end
+
+  def test_a_visit_off_a_job_with_no_property_has_no_address
+    node = { 'id' => 'visit-01', 'job' => { 'id' => 'job-01', 'property' => nil } }
+    stub_graphql 'visits' => { 'nodes' => [ node ], 'pageInfo' => { 'hasNextPage' => false } }
+
+    assert_empty oauth.visits.upcoming.first.address
   end
 
   def test_an_unscheduled_visit_has_no_job_and_no_times

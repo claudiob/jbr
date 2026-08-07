@@ -15,6 +15,8 @@ module Jbr
 
     def job_id = @node[:job_id]
 
+    def address = @node.fetch :address, {}
+
     def starts_at = @node[:starts_at]
 
     def ends_at = @node[:ends_at]

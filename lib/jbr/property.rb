@@ -26,6 +26,13 @@ module Jbr
       FIELDS.to_h { |jobber, ours| [ jobber, fields[ours] ] }.compact
     end
 
+    # The address fields a caller passes, from the address as Jobber holds it.
+    # @param address [Hash, nil] the address Jobber answered, if it answered one.
+    # @return [Hash] any of :street, :city, :state and :zip, without the ones Jobber left out.
+    def self.fields_from(address)
+      FIELDS.to_h { |jobber, ours| [ ours, (address || {})[jobber.to_s] ] }.compact
+    end
+
     # Reach the property at an address, adding one when none of the client's matches.
     # @param client_id [String] the client the property belongs to.
     # @param address [Hash] the fields the work happens at.

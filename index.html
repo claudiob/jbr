@@ -392,7 +392,7 @@ footer p { color: var(--ink-soft); max-width: 40rem; }
   <div class='wrap'>
     <div class='hero-grid'>
       <div>
-        <p class='plate'><span class='rivet'></span>Ruby gem &middot; 3.1.0 &middot; MIT<span class='rivet'></span></p>
+        <p class='plate'><span class='rivet'></span>Ruby gem &middot; 3.2.0 &middot; MIT<span class='rivet'></span></p>
         <h1>jbr</h1>
         <p class='tagline'>A Ruby client for the Jobber GraphQL API.</p>
         <p class='sub'>It needs the standard library and two files of Active Support, to tell a field Jobber answered empty from one it never answered at all. One more tool on the belt: hand it OAuth credentials and it hands back requests, quotes, jobs, invoices, visits and webhook events.</p>
@@ -437,6 +437,7 @@ footer p { color: var(--ink-soft); max-width: 40rem; }
         <li><a href='#invoices'>Invoices</a></li>
         <li><a href='#visits'>Visits</a></li>
         <li><a href='#clients'>Clients and properties</a></li>
+        <li><a href='#limits'>Rate limits</a></li>
         <li><a href='#events'>Events</a></li>
       </ul>
     </nav>
@@ -604,6 +605,18 @@ visit.property.client.name # =&gt; whoever the place sits on the file of</code><
 
       <p class='note'>Ask for nothing and nothing arrives: <code class='inline'>oauth.visits.first.client.name</code> is nil where the query never named a client.</p>
     </section>
+
+<section id='limits'>
+<div class='head'>
+  <span class='glyph' aria-hidden='true'><svg viewBox='0 0 32 32' class='g-gauge'><path d='M 5 22 A 12 12 0 1 1 27 22'/><path d='M 16 20 L 22.5 12.5'/><circle cx='16' cy='20.5' r='1.5'/></svg></span>
+  <h2>Rate limits</h2>
+  <a class='anchor' href='#limits' aria-label='Link to Rate limits'>#</a>
+</div>
+<hr>
+
+<p class='note'>Jobber holds an app to two limits at once: 2,500 requests every five minutes, and a bucket of query cost that drains as it is asked and refills at a rate it reports. Nothing has to be done about either &mdash; every request waits for itself. It spaces itself 0.12 seconds from the one before, which is 2,500 spread evenly over five minutes, and it reads <code class='inline'>extensions.cost</code> off each answer, waiting for the shortfall to refill where the bucket can no longer pay for a page like the last one.</p>
+<p class='note'>A request that follows no other waits for nothing, so a single lookup is as quick as it ever was. Only a walk long enough to be a problem is slowed, and only by as much as it must be.</p>
+</section>
 
     <section id='events'>
       <div class='head'>

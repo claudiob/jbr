@@ -392,7 +392,7 @@ footer p { color: var(--ink-soft); max-width: 40rem; }
   <div class='wrap'>
     <div class='hero-grid'>
       <div>
-        <p class='plate'><span class='rivet'></span>Ruby gem &middot; 2.2.0 &middot; MIT<span class='rivet'></span></p>
+        <p class='plate'><span class='rivet'></span>Ruby gem &middot; 3.0.0 &middot; MIT<span class='rivet'></span></p>
         <h1>jbr</h1>
         <p class='tagline'>A Ruby client for the Jobber GraphQL API.</p>
         <p class='sub'>It needs nothing but the standard library. One more tool on the belt: hand it OAuth credentials and it hands back requests, quotes, jobs, invoices, visits and webhook events.</p>
@@ -436,6 +436,7 @@ footer p { color: var(--ink-soft); max-width: 40rem; }
         <li><a href='#jobs'>Jobs</a></li>
         <li><a href='#invoices'>Invoices</a></li>
         <li><a href='#visits'>Visits</a></li>
+        <li><a href='#clients'>Clients and properties</a></li>
         <li><a href='#events'>Events</a></li>
       </ul>
     </nav>
@@ -511,12 +512,26 @@ quote.request_id # =&gt; 'Z2lkOi8vSm9iYmVyL'</code></pre></div>
       </div>
       <hr>
 
-      <p class='note'>Fetch a job from Jobber:</p>
+      <p class='note'>Fetch a job from Jobber by the ID it is filed under:</p>
       <div class='snippet'><pre><code>job = oauth.jobs.find 'Njc5MTk5'
 job.id # =&gt; 'Z2lkOi8vS'
 job.quote_id # =&gt; 'Z2lkOi8vS'
 job.scheduled_at # =&gt; 2026-05-14 23:02:52
 job.completed_at # =&gt; 2026-05-18 11:36:13</code></pre></div>
+
+      <p class='note'>Or walk the account's jobs, oldest first. Jobber is asked for a page at a time, and only once the page before it runs out, so <code class='inline'>first</code> costs one request where <code class='inline'>to_a</code> costs as many as the account has pages:</p>
+      <div class='snippet'><pre><code>jobs = oauth.jobs # =&gt; an Enumerable of every job, nothing fetched yet
+oauth.jobs.past # =&gt; an Enumerator of the ones dated before now
+oauth.jobs.upcoming # =&gt; an Enumerator of the ones dated from now on
+
+job = jobs.first
+job.name # =&gt; 'Furnace tune-up', or the job's ID where nobody titled it. Never nil
+job.title # =&gt; 'Furnace tune-up'
+job.instructions # =&gt; 'Ring the doorbell twice'
+job.status # =&gt; 'requires_invoicing'
+job.total # =&gt; 260.0
+job.quote_total # =&gt; 240.0
+job.created_at # =&gt; 2026-05-10 09:15:00</code></pre></div>
     </section>
 
     <section id='invoices'>
@@ -544,21 +559,48 @@ invoice.completed_at # =&gt; 2026-05-22 14:32:53</code></pre></div>
       </div>
       <hr>
 
-      <p class='note'>Fetch the visits scheduled from now on, oldest first. Jobber is asked for a page at a time, and only once the page before it runs out, so <code class='inline'>first</code> costs one request where <code class='inline'>to_a</code> costs as many as the account has pages:</p>
-      <div class='snippet'><pre><code>visits = oauth.visits.upcoming # =&gt; an Enumerator, nothing fetched yet
+      <p class='note'>Walk the account's visits, oldest first, the same way as its jobs:</p>
+      <div class='snippet'><pre><code>visits = oauth.visits # =&gt; an Enumerable of every visit, nothing fetched yet
+oauth.visits.upcoming # =&gt; an Enumerator of the ones dated from now on
+oauth.visits.past # =&gt; an Enumerator of the ones dated before now
+
 visit = visits.first
 visit.id # =&gt; 'Z2lkOi8vS'
 visit.title # =&gt; 'Furnace tune-up'
 visit.job_id # =&gt; 'Z2lkOi8vS'
-visit.property_id # =&gt; 'Z2lkOi8vS'
-visit.client # =&gt; { id: 'Z2lkOi8vS', first_name: 'Jane', last_name: 'Doe',
-             #      phone: '5553335555', email: 'jane@example.com' }
-visit.address # =&gt; { street: '1 Main St', city: 'Raleigh', state: 'NC', zip: '27601',
-              #      latitude: 35.77, longitude: -78.63 }
 visit.starts_at # =&gt; 2026-08-09 14:00:00
 visit.ends_at # =&gt; 2026-08-09 16:00:00
 visit.all_day? # =&gt; false
 visit.client_confirmed? # =&gt; true</code></pre></div>
+    </section>
+
+    <section id='clients'>
+      <div class='head'>
+        <span class='glyph' aria-hidden='true'><svg viewBox='0 0 32 32' class='g-house'><path d='M 4.5 15 L 16 5.5 L 27.5 15'/><path d='M 7.5 13.5 v 13 h 17 v -13'/><path d='M 13 26.5 v -7 h 6 v 7'/></svg></span>
+        <h2>Clients and properties</h2>
+        <a class='anchor' href='#clients' aria-label='Link to Clients and properties'>#</a>
+      </div>
+      <hr>
+
+      <p class='note'>Jobber prices a query by what it brings back, so nothing nested comes back unless it is asked for. Chain <code class='inline'>includes</code> the way Active Record does, on visits or on jobs:</p>
+      <div class='snippet'><pre><code>visit = oauth.visits.includes(:client, property: :client).upcoming.first
+
+visit.client.name # =&gt; 'Jane', or the business's name where the client is a business
+visit.client.first_name # =&gt; 'Jane'
+visit.client.last_name # =&gt; 'Doe'
+visit.client.company_name # =&gt; nil
+visit.client.email # =&gt; 'jane@example.com'
+visit.client.phone # =&gt; '5553335555', the reachable North American number, or nil
+
+visit.property.id # =&gt; 'Z2lkOi8vS'
+visit.property.street # =&gt; '1 Main St'
+visit.property.city # =&gt; 'Raleigh'
+visit.property.zip # =&gt; '27601'
+visit.property.address # =&gt; { street: '1 Main St', city: 'Raleigh', state: 'NC',
+                       #      zip: '27601', latitude: 35.77, longitude: -78.63 }
+visit.property.client.name # =&gt; whoever the place sits on the file of</code></pre></div>
+
+      <p class='note'>Ask for nothing and nothing arrives: <code class='inline'>oauth.visits.first.client.name</code> is nil where the query never named a client.</p>
     </section>
 
     <section id='events'>

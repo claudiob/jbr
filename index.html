@@ -392,7 +392,7 @@ footer p { color: var(--ink-soft); max-width: 40rem; }
   <div class='wrap'>
     <div class='hero-grid'>
       <div>
-        <p class='plate'><span class='rivet'></span>Ruby gem &middot; 3.2.0 &middot; MIT<span class='rivet'></span></p>
+        <p class='plate'><span class='rivet'></span>Ruby gem &middot; 3.3.0 &middot; MIT<span class='rivet'></span></p>
         <h1>jbr</h1>
         <p class='tagline'>A Ruby client for the Jobber GraphQL API.</p>
         <p class='sub'>It needs the standard library and two files of Active Support, to tell a field Jobber answered empty from one it never answered at all. One more tool on the belt: hand it OAuth credentials and it hands back requests, quotes, jobs, invoices, visits and webhook events.</p>
@@ -474,6 +474,8 @@ oauth.account_id # =&gt; 'Z2lkOi8vSm9iYmV'</code></pre></div>
 
       <p class='note'>Revoke credentials:</p>
       <div class='snippet'><pre><code>oauth.delete</code></pre></div>
+
+      <p class='note'>Credentials go bad only when Jobber says so. A refused refresh &mdash; the <code class='inline'>invalid_grant</code> Jobber names &mdash; sets <code class='inline'>invalid_at</code> and answers queries with nothing. Anything else that goes wrong, including a 500 or a rate limit, raises <code class='inline'>Jbr::Error</code> instead, because a token that may still work is worth more than a tidy failure.</p>
     </section>
 
     <section id='requests'>

@@ -1,16 +1,23 @@
 #!/bin/sh
-# Every browser icon on this page is rendered from icon.svg, so the wrench is drawn once
-# and the set cannot drift apart. Run it after editing icon.svg and commit what changes.
+# Every icon this gem shows anywhere is rendered from icon.svg, so the wrench is drawn
+# once and the set cannot drift apart: the browser's, iOS', and the avatar GitHub and
+# the social networks are given. Run it after editing icon.svg and commit what changes.
 #
 #   brew install librsvg imagemagick
 set -e
 
 png() { rsvg-convert -w "$1" -h "$1" "$3" -o "$2"; }
 
-# iOS masks the home-screen icon itself, so that one is rendered square-cornered.
+# iOS masks the home-screen icon itself, and every service showing an avatar crops it
+# round, so those two are rendered square-cornered: a corner rounded twice reads as a
+# mistake.
 sed "s/rx='14'/rx='0'/" icon.svg > /tmp/jbr-square.svg
 
 png 180 apple-touch-icon.png /tmp/jbr-square.svg
+
+# One avatar for GitHub and for every social network that asks for a picture: each crops
+# its own square, and 1024 is the largest any of them wants.
+png 1024 avatar.png /tmp/jbr-square.svg
 png 96 favicon-96x96.png icon.svg
 png 192 web-app-manifest-192x192.png icon.svg
 png 512 web-app-manifest-512x512.png icon.svg

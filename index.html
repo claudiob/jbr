@@ -545,12 +545,13 @@ job.summary # =&gt; '3 Bathroom Faucet Installation and 2 Change Toilet Valve', 
 line = job.line_items.first
 line.quantity # =&gt; 3, whole where Jobber's own Float has nothing after the point, and 3.5
               #    where it has: '3 Faucets', or '3.5 Hours' for what was really billed
+line.quantified # =&gt; '3 Bathroom Faucet Installation', how many of what
 line.name # =&gt; 'Bathroom Faucet Installation'
 line.description # =&gt; 'Professional installation of a new bathroom faucet'
 line.to_s # =&gt; '3 Bathroom Faucet Installation (Professional installation of a new
           #     bathroom faucet)', and without the parenthesis where nobody described it</code></pre></div>
 
-      <p class='note'>A line quantified at nothing is not in the list, and neither is one nobody quantified at all &mdash; but a fraction of one is, since half an hour of labour is still labour. Ask for nothing and nothing arrives, so <code class='inline'>oauth.jobs.first.line_items</code> is empty where the query never named them.</p>
+      <p class='note'>Every line Jobber holds is in the list, in the order it holds them and whatever each is quantified at. One it holds no quantity for reads as its name alone. Ask for nothing and nothing arrives, so <code class='inline'>oauth.jobs.first.line_items</code> is empty where the query never named them.</p>
     </section>
 
     <section id='invoices'>

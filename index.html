@@ -392,7 +392,7 @@ footer p { color: var(--ink-soft); max-width: 40rem; }
   <div class='wrap'>
     <div class='hero-grid'>
       <div>
-        <p class='plate'><span class='rivet'></span>Ruby gem &middot; 3.4.0 &middot; MIT<span class='rivet'></span></p>
+        <p class='plate'><span class='rivet'></span>Ruby gem &middot; 3.5.1 &middot; MIT<span class='rivet'></span></p>
         <h1>jbr</h1>
         <p class='tagline'>A Ruby client for the Jobber GraphQL API.</p>
         <p class='sub'>It needs the standard library and two files of Active Support, to tell a field Jobber answered empty from one it never answered at all. One more tool on the belt: hand it OAuth credentials and it hands back requests, quotes, jobs, invoices, visits and webhook events.</p>
@@ -545,13 +545,11 @@ job.summary # =&gt; '3 Bathroom Faucet Installation and 2 Change Toilet Valve', 
 line = job.line_items.first
 line.quantity # =&gt; 3, whole where Jobber's own Float has nothing after the point, and 3.5
               #    where it has: '3 Faucets', or '3.5 Hours' for what was really billed
-line.quantified # =&gt; '3 Bathroom Faucet Installation', how many of what
 line.name # =&gt; 'Bathroom Faucet Installation'
-line.description # =&gt; 'Professional installation of a new bathroom faucet'
-line.to_s # =&gt; '3 Bathroom Faucet Installation (Professional installation of a new
-          #     bathroom faucet)', and without the parenthesis where nobody described it</code></pre></div>
+line.to_s # =&gt; '3 Bathroom Faucet Installation', how many of what, and the name alone
+          #    where Jobber holds no quantity for the line</code></pre></div>
 
-      <p class='note'>Every line Jobber holds is in the list, in the order it holds them and whatever each is quantified at. One it holds no quantity for reads as its name alone. Ask for nothing and nothing arrives, so <code class='inline'>oauth.jobs.first.line_items</code> is empty where the query never named them.</p>
+      <p class='note'>Every line Jobber holds is in the list, up to twenty of them, in the order it holds them and whatever each is quantified at. One it holds no quantity for reads as its name alone. Ask for nothing and nothing arrives, so <code class='inline'>oauth.jobs.first.line_items</code> is empty where the query never named them.</p>
     </section>
 
     <section id='invoices'>
@@ -635,6 +633,11 @@ visit.property.client.name # =&gt; whoever the place sits on the file of</code><
 
 <p class='note'>Jobber holds an app to two limits at once: 2,500 requests every five minutes, and a bucket of query cost that drains as it is asked and refills at a rate it reports. Nothing has to be done about either &mdash; every request waits for itself. It spaces itself 0.12 seconds from the one before, which is 2,500 spread evenly over five minutes, and it reads <code class='inline'>extensions.cost</code> off each answer, waiting for the shortfall to refill where the bucket can no longer pay for a page like the last one.</p>
 <p class='note'>A request that follows no other waits for nothing, so a single lookup is as quick as it ever was. Only a walk long enough to be a problem is slowed, and only by as much as it must be.</p>
+
+<p class='note'>Where Jobber refuses for cost anyway, the <code class='inline'>Jbr::Error</code> raised says what the query would have cost against what was available &mdash; so a query too big to ever run reads apart from a bucket that needed a moment:</p>
+<div class='snippet'><pre><code>Throttled (cost 12400, 9500 of 10000 available, restoring 500/s)</code></pre></div>
+
+<p class='note'>Every connection the gem asks for is bounded, because Jobber prices an unbounded one at its own maximum: twenty lines to a job, and twenty jobs or visits to a page.</p>
 </section>
 
     <section id='events'>

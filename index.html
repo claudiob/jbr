@@ -392,7 +392,7 @@ footer p { color: var(--ink-soft); max-width: 40rem; }
   <div class='wrap'>
     <div class='hero-grid'>
       <div>
-        <p class='plate'><span class='rivet'></span>Ruby gem &middot; 3.5.1 &middot; MIT<span class='rivet'></span></p>
+        <p class='plate'><span class='rivet'></span>Ruby gem &middot; 3.6.0 &middot; MIT<span class='rivet'></span></p>
         <h1>jbr</h1>
         <p class='tagline'>A Ruby client for the Jobber GraphQL API.</p>
         <p class='sub'>It needs the standard library and two files of Active Support, to tell a field Jobber answered empty from one it never answered at all. One more tool on the belt: hand it OAuth credentials and it hands back requests, quotes, jobs, invoices, visits and webhook events.</p>
@@ -634,10 +634,12 @@ visit.property.client.name # =&gt; whoever the place sits on the file of</code><
 <p class='note'>Jobber holds an app to two limits at once: 2,500 requests every five minutes, and a bucket of query cost that drains as it is asked and refills at a rate it reports. Nothing has to be done about either &mdash; every request waits for itself. It spaces itself 0.12 seconds from the one before, which is 2,500 spread evenly over five minutes, and it reads <code class='inline'>extensions.cost</code> off each answer, waiting for the shortfall to refill where the bucket can no longer pay for a page like the last one.</p>
 <p class='note'>A request that follows no other waits for nothing, so a single lookup is as quick as it ever was. Only a walk long enough to be a problem is slowed, and only by as much as it must be.</p>
 
-<p class='note'>Where Jobber refuses for cost anyway, the <code class='inline'>Jbr::Error</code> raised says what the query would have cost against what was available &mdash; so a query too big to ever run reads apart from a bucket that needed a moment:</p>
-<div class='snippet'><pre><code>Throttled (cost 12400, 9500 of 10000 available, restoring 500/s)</code></pre></div>
+<p class='note'>Where Jobber refuses anyway, the refusal says what the query would have cost against what was available, and what happens next follows from those two numbers:</p>
+<div class='snippet'><pre><code>Throttled (cost 1885, 1254 of 10000 available, restoring 500/s)</code></pre></div>
 
-<p class='note'>Every connection the gem asks for is bounded, because Jobber prices an unbounded one at its own maximum: twenty lines to a job, and twenty jobs or visits to a page.</p>
+<p class='note'>631 points short of a query the bucket holds five times over, so the shortfall is waited out &mdash; 1.26 seconds at 500 a second &mdash; and the same question asked again, up to four times. Only a query costing more than the bucket <em>ever</em> holds is given up on, since no wait would help it; that one arrives as a <code class='inline'>Jbr::Error</code> carrying the line above.</p>
+
+<p class='note'>Every connection the gem asks for is bounded, to keep a query on the affordable side of that: twenty lines to a job, and twenty jobs or visits to a page.</p>
 </section>
 
     <section id='events'>

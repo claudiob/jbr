@@ -392,7 +392,7 @@ footer p { color: var(--ink-soft); max-width: 40rem; }
   <div class='wrap'>
     <div class='hero-grid'>
       <div>
-        <p class='plate'><span class='rivet'></span>Ruby gem &middot; 3.6.0 &middot; MIT<span class='rivet'></span></p>
+        <p class='plate'><span class='rivet'></span>Ruby gem &middot; 3.11.0 &middot; MIT<span class='rivet'></span></p>
         <h1>jbr</h1>
         <p class='tagline'>A Ruby client for the Jobber GraphQL API.</p>
         <p class='sub'>It needs the standard library and two files of Active Support, to tell a field Jobber answered empty from one it never answered at all. One more tool on the belt: hand it OAuth credentials and it hands back requests, quotes, jobs, invoices, visits and webhook events.</p>
@@ -616,6 +616,8 @@ visit.property.id # =&gt; 'Z2lkOi8vS'
 visit.property.street # =&gt; '1 Main St'
 visit.property.city # =&gt; 'Raleigh'
 visit.property.zip # =&gt; '27601'
+visit.property.latitude # =&gt; 35.77
+visit.property.longitude # =&gt; -78.63
 visit.property.address # =&gt; { street: '1 Main St', city: 'Raleigh', state: 'NC',
                        #      zip: '27601', latitude: 35.77, longitude: -78.63 }
 visit.property.client.name # =&gt; whoever the place sits on the file of</code></pre></div>

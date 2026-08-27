@@ -1,0 +1,13 @@
+name: Mirror gh-pages to the HouseAccountEng fork
+
+# A trigger only; the companion on the default branch carries the schedule and
+# the manual button, since GitHub honours workflow_dispatch and schedule only
+# for workflow files on the default branch. push works on any branch.
+on:
+  push:
+    branches: [gh-pages]
+
+jobs:
+  mirror:
+    uses: claudiob/workflows/.github/workflows/mirror-fork.yml@main
+    secrets: inherit

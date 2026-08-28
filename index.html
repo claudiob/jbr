@@ -392,7 +392,7 @@ footer p { color: var(--ink-soft); max-width: 40rem; }
   <div class='wrap'>
     <div class='hero-grid'>
       <div>
-        <p class='plate'><span class='rivet'></span>Ruby gem &middot; 3.11.0 &middot; MIT<span class='rivet'></span></p>
+        <p class='plate'><span class='rivet'></span>Ruby gem &middot; 3.12.0 &middot; MIT<span class='rivet'></span></p>
         <h1>jbr</h1>
         <p class='tagline'>A Ruby client for the Jobber GraphQL API.</p>
         <p class='sub'>It needs the standard library and two files of Active Support, to tell a field Jobber answered empty from one it never answered at all. One more tool on the belt: hand it OAuth credentials and it hands back requests, quotes, jobs, invoices, visits and webhook events.</p>
@@ -471,6 +471,12 @@ url # =&gt; 'https://api.getjobber.com/api/oauth/authorize?state=...&amp;redirec
 oauth.refresh_token # =&gt; 'ea02775958c5fca28d'
 oauth.expires_at # =&gt; 2026-05-22 14:32:53
 oauth.account_id # =&gt; 'Z2lkOi8vSm9iYmV'</code></pre></div>
+
+      <p class='note'>Read the account they belong to, once, however much of it is asked for:</p>
+      <div class='snippet'><pre><code>account = oauth.account
+account.id # =&gt; 'Z2lkOi8vSm9iYmV'
+account.name # =&gt; 'Acme Plumbing'
+account.phone # =&gt; '(704) 459-7540', as Jobber holds it</code></pre></div>
 
       <p class='note'>Revoke credentials:</p>
       <div class='snippet'><pre><code>oauth.delete</code></pre></div>

@@ -4,7 +4,7 @@
 <meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'>
 <title>jbr — a Ruby client for the Jobber API</title>
-<meta name='description' content='Every method the jbr gem exposes: credentials, requests, quotes, jobs, invoices, visits and events, in Ruby, with the standard library and two files of Active Support.'>
+<meta name='description' content='Every method the jbr gem exposes: the account, leads, quotes, jobs, invoices, visits, locations and events, in Ruby, in the vocabulary the company gem names.'>
 <!-- All rendered from icon.svg by build-icons.sh; nothing on this page is fetched from anywhere else. -->
 <link rel='icon' href='icon.svg' type='image/svg+xml'>
 <link rel='icon' href='favicon-96x96.png' type='image/png' sizes='96x96'>
@@ -392,10 +392,10 @@ footer p { color: var(--ink-soft); max-width: 40rem; }
   <div class='wrap'>
     <div class='hero-grid'>
       <div>
-        <p class='plate'><span class='rivet'></span>Ruby gem &middot; 3.12.0 &middot; MIT<span class='rivet'></span></p>
+        <p class='plate'><span class='rivet'></span>Ruby gem &middot; 4.0.0 &middot; MIT<span class='rivet'></span></p>
         <h1>jbr</h1>
         <p class='tagline'>A Ruby client for the Jobber GraphQL API.</p>
-        <p class='sub'>It needs the standard library and two files of Active Support, to tell a field Jobber answered empty from one it never answered at all. One more tool on the belt: hand it OAuth credentials and it hands back requests, quotes, jobs, invoices, visits and webhook events.</p>
+        <p class='sub'>It needs the standard library and the <a href='https://github.com/claudiob/company'>company</a> gem, whose vocabulary every record here answers in: a job on Jobber reads by the same names as a job on any other platform. One more tool on the belt: hand it OAuth credentials and it hands back the business, its leads, quotes, jobs, invoices, visits and webhook events.</p>
         <div class='actions'>
           <a class='btn' href='https://github.com/claudiob/jbr'>
             <svg viewBox='0 0 16 16' aria-hidden='true' fill='currentColor'><path d='M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z'/></svg>
@@ -431,12 +431,12 @@ footer p { color: var(--ink-soft); max-width: 40rem; }
       <h2 id='rail-title'>What is in the box</h2>
       <ul>
         <li><a href='#credentials'>Credentials</a></li>
-        <li><a href='#requests'>Requests</a></li>
+        <li><a href='#leads'>Leads</a></li>
         <li><a href='#quotes'>Quotes</a></li>
         <li><a href='#jobs'>Jobs</a></li>
         <li><a href='#invoices'>Invoices</a></li>
         <li><a href='#visits'>Visits</a></li>
-        <li><a href='#clients'>Clients and properties</a></li>
+        <li><a href='#locations'>Locations and customers</a></li>
         <li><a href='#limits'>Rate limits</a></li>
         <li><a href='#events'>Events</a></li>
       </ul>
@@ -457,46 +457,57 @@ footer p { color: var(--ink-soft); max-width: 40rem; }
       <hr>
 
       <p class='note'>Generate the URL for Jobber users to authorize the app:</p>
-      <div class='snippet'><pre><code>url = Jbr.oauth_url_for redirect_uri:, state:
+      <div class='snippet'><pre><code>url = Jbr::Account.url_for redirect_uri:, state:
 url # =&gt; 'https://api.getjobber.com/api/oauth/authorize?state=...&amp;redirect_uri=...'</code></pre></div>
 
-      <p class='note'>Create credentials with a code and a redirect URI:</p>
-      <div class='snippet'><pre><code>oauth = Jbr.create_oauth code:, redirect_uri:</code></pre></div>
+      <p class='note'>Create an account with the code Jobber sends back and the URI it sent it to:</p>
+      <div class='snippet'><pre><code>account = Jbr::Account.create code:, redirect_uri:</code></pre></div>
 
-      <p class='note'>Initialize with existing credentials:</p>
-      <div class='snippet'><pre><code>oauth = Jbr.oauth_for access_token:, refresh_token:, expires_at:, account_id:</code></pre></div>
+      <p class='note'>Open an account with credentials already on file:</p>
+      <div class='snippet'><pre><code>account = Jbr::Account.new access_token:, refresh_token:, expires_at:, account_id:</code></pre></div>
 
-      <p class='note'>Access OAuth attributes:</p>
-      <div class='snippet'><pre><code>oauth.access_token # =&gt; 'eyJhbGciOiJIUzI1NiJ'
-oauth.refresh_token # =&gt; 'ea02775958c5fca28d'
-oauth.expires_at # =&gt; 2026-05-22 14:32:53
-oauth.account_id # =&gt; 'Z2lkOi8vSm9iYmV'</code></pre></div>
+      <p class='note'>Where several processes hold copies of the same credentials, a queue of workers each building its own, hand over a <code class='inline'>store:</code> as well, and only one of them will ever spend the refresh token. The store is anything answering <code class='inline'>exclusively</code>, which takes the app's own lock over the credentials and yields them as they are right now, and <code class='inline'>write</code>, which records the ones Jobber handed back:</p>
+      <div class='snippet'><pre><code>account = Jbr::Account.new account_id:, invalid_at:, store: credentials</code></pre></div>
 
-      <p class='note'>Read the account they belong to, once, however much of it is asked for:</p>
-      <div class='snippet'><pre><code>account = oauth.account
-account.id # =&gt; 'Z2lkOi8vSm9iYmV'
-account.name # =&gt; 'Acme Plumbing'
-account.phone # =&gt; '(704) 459-7540', as Jobber holds it</code></pre></div>
+      <p class='note'>Read the credentials as Jobber last gave them:</p>
+      <div class='snippet'><pre><code>account.access_token # =&gt; 'eyJhbGciOiJIUzI1NiJ'
+account.refresh_token # =&gt; 'ea02775958c5fca28d'
+account.expires_at # =&gt; 2026-05-22 14:32:53
+account.account_id # =&gt; 'Z2lkOi8vSm9iYmV'</code></pre></div>
 
-      <p class='note'>Revoke credentials:</p>
-      <div class='snippet'><pre><code>oauth.delete</code></pre></div>
+      <p class='note'>Read the business they belong to:</p>
+      <div class='snippet'><pre><code>business = account.business
+business.id # =&gt; 'Z2lkOi8vSm9iYmV'
+business.name # =&gt; 'Acme Plumbing'
+business.phone # =&gt; '7044597540', the ten digits to dial, or nil where none can be</code></pre></div>
 
-      <p class='note'>Credentials go bad only when Jobber says so. A refused refresh &mdash; the <code class='inline'>invalid_grant</code> Jobber names &mdash; sets <code class='inline'>invalid_at</code> and answers queries with nothing. Anything else that goes wrong, including a 500 or a rate limit, raises <code class='inline'>Jbr::Error</code> instead, because a token that may still work is worth more than a tidy failure.</p>
+      <p class='note'>Revoke the credentials:</p>
+      <div class='snippet'><pre><code>account.delete</code></pre></div>
+
+      <p class='note'>Credentials go bad only when Jobber says so of the grant itself &mdash; <code class='inline'>The provided refresh token is not valid.</code> &mdash; which sets <code class='inline'>invalid_at</code> and answers queries with nothing. Anything else that goes wrong raises <code class='inline'>Jbr::Error</code> instead: a 500, a rate limit, and the 401 Jobber answers an app whose own client id and secret are wrong, which is every account's grant at once rather than this one's.</p>
+      <div class='snippet'><pre><code>account.invalid_at # =&gt; 2026-08-13 11:02:41, or nil while the credentials are good
+account.query '{ ok }' # =&gt; {} once they are refused, raises Jbr::Error where Jobber had trouble</code></pre></div>
+
+      <p class='note'>The app's own client ID and secret are read from <code class='inline'>JOBBER_CLIENT_ID</code> and <code class='inline'>JOBBER_CLIENT_SECRET</code> in the environment, and <code class='inline'>Jbr::Account.client_secret</code> answers the one to check a webhook with.</p>
     </section>
 
-    <section id='requests'>
+    <section id='leads'>
       <div class='head'>
         <span class='glyph' aria-hidden='true'><svg viewBox='0 0 32 32' class='g-pencil'><g transform='rotate(-35 16 16)'><path d='M 12 5.5 h 8 v 15 l -4 6 l -4 -6 z'/><path d='M 12 20.5 h 8'/><path class='lead' d='M 16 20.5 v 5.2'/></g></svg></span>
-        <h2>Requests</h2>
-        <a class='anchor' href='#requests' aria-label='Link to Requests'>#</a>
+        <h2>Leads</h2>
+        <a class='anchor' href='#leads' aria-label='Link to Leads'>#</a>
       </div>
       <hr>
 
-      <p class='note'>Create a Jobber request, finding or creating a Client with a matching phone number:</p>
-      <div class='snippet'><pre><code>request = oauth.requests.create first_name: 'Jane', last_name: 'Doe', phone: '5553335555',
-  email: 'jane@example.com', title: 'New Plumber Lead', instructions: 'Needs new faucet'
-request.id # =&gt; 'Z2lkOi8vSm9iYmVyL'
-request.client_id # =&gt; 'MwMTU0Mg'</code></pre></div>
+      <p class='note'>File a request on the account's board, against the customer answering to the phone and the location at the address, opening either where Jobber has none:</p>
+      <div class='snippet'><pre><code>lead = account.leads.create name: 'Jane', surname: 'Doe', phone: '5553335555',
+  email: 'jane@example.com', description: 'New Plumber Lead', notes: 'Needs new faucet',
+  source: nil, # Jobber has no source for a request, so this one is dropped
+  address: { street: '1 Main St', city: 'Raleigh', state: 'NC', zip: '27601' }
+lead.id # =&gt; 'Z2lkOi8vSm9iYmVyL'
+lead.customer.id # =&gt; 'MwMTU0Mg', the customer the request was opened against</code></pre></div>
+
+      <p class='note'>A mutation Jobber takes but will not act on &mdash; a phone it calls invalid, or an email it already holds &mdash; raises <code class='inline'>Jbr::Error</code> with what Jobber said.</p>
     </section>
 
     <section id='quotes'>
@@ -507,10 +518,10 @@ request.client_id # =&gt; 'MwMTU0Mg'</code></pre></div>
       </div>
       <hr>
 
-      <p class='note'>Fetch a quote from Jobber:</p>
-      <div class='snippet'><pre><code>quote = oauth.quotes.find 'Z2lkOi8vS'
+      <p class='note'>Fetch a quote from Jobber, and the lead it answers:</p>
+      <div class='snippet'><pre><code>quote = account.quotes.find 'Z2lkOi8vS'
 quote.id # =&gt; 'Z2lkOi8vS'
-quote.request_id # =&gt; 'Z2lkOi8vSm9iYmVyL'</code></pre></div>
+quote.lead.id # =&gt; 'Z2lkOi8vSm9iYmVyL', the request the quote answers, or nil where none</code></pre></div>
     </section>
 
     <section id='jobs'>
@@ -522,40 +533,38 @@ quote.request_id # =&gt; 'Z2lkOi8vSm9iYmVyL'</code></pre></div>
       <hr>
 
       <p class='note'>Fetch a job from Jobber by the ID it is filed under:</p>
-      <div class='snippet'><pre><code>job = oauth.jobs.find 'Njc5MTk5'
+      <div class='snippet'><pre><code>job = account.jobs.find 'Njc5MTk5'
 job.id # =&gt; 'Z2lkOi8vS'
-job.quote_id # =&gt; 'Z2lkOi8vS'
+job.quote.id # =&gt; 'Z2lkOi8vS', the quote the job was won with, or nil where none was
+job.quote.amount # =&gt; 240.0, in dollars, as a BigDecimal
+job.amount # =&gt; 260.0
+job.notes # =&gt; 'Ring the doorbell twice', what Jobber calls the instructions
+job.created_at # =&gt; 2026-05-10 09:15:00
 job.scheduled_at # =&gt; 2026-05-14 23:02:52
 job.completed_at # =&gt; 2026-05-18 11:36:13</code></pre></div>
 
-      <p class='note'>Or walk the account's jobs, oldest first. Jobber is asked for a page at a time, and only once the page before it runs out, so <code class='inline'>first</code> costs one request where <code class='inline'>to_a</code> costs as many as the account has pages:</p>
-      <div class='snippet'><pre><code>jobs = oauth.jobs # =&gt; an Enumerable of every job, nothing fetched yet
-oauth.jobs.past # =&gt; an Enumerator of the ones dated before now
-oauth.jobs.upcoming # =&gt; an Enumerator of the ones dated from now on
+      <p class='note'>Or walk the account's jobs, oldest first. Either half of the schedule takes how much of it you meant, a duration measured from the same now the half is split at, and a walk that stops at a boundary reads only the pages up to it. Jobber is asked for a page at a time, and only once the page before it runs out, so <code class='inline'>first</code> costs one request where <code class='inline'>to_a</code> costs as many as the account has pages. A walk is priced by what its pages carry, and a long one can be refused for it: see <a href='#limits'>Rate limits</a>.</p>
+      <div class='snippet'><pre><code>account.jobs # =&gt; an Enumerable of every job, nothing fetched yet
+account.jobs.past # =&gt; the ones dated before now, nothing fetched yet
+account.jobs.upcoming # =&gt; the ones dated from now on, nothing fetched yet
+account.jobs.past(1.year) # =&gt; only as far back as a year, which is fewer pages to read
+account.jobs.past.ids # =&gt; %w[Z2lkOi8vS ...], every page of them, and nothing else about them</code></pre></div>
 
-job = jobs.first
-job.name # =&gt; 'Furnace tune-up', or the job's ID where nobody titled it. Never nil or empty
-job.title # =&gt; 'Furnace tune-up'
-job.instructions # =&gt; 'Ring the doorbell twice'
-job.status # =&gt; 'requires_invoicing'
-job.total # =&gt; 260.0
-job.quote_total # =&gt; 240.0
-job.created_at # =&gt; 2026-05-10 09:15:00</code></pre></div>
+      <p class='note'>The description is whatever somebody called the job when they opened it, and often nothing at all. What the work actually was is in the lines beneath it, asked for the way anything nested is, because a page costs what it carries:</p>
+      <div class='snippet'><pre><code>job = account.jobs.includes(:lines).find 'Njc5MTk5'
 
-      <p class='note'>A title is whatever somebody typed when they opened the job, and often nothing at all. What the work actually was is in the lines beneath it, asked for the way anything nested is, because a page costs what it carries:</p>
-      <div class='snippet'><pre><code>job = oauth.jobs.includes(:line_items).find 'Njc5MTk5'
+job.description # =&gt; 'Fix the sink', what somebody typed on the job
+job.lines.map(&amp;:name) # =&gt; ['Bathroom Faucet Installation', 'Change Toilet Valve']
 
-job.summary # =&gt; '3 Bathroom Faucet Installation and 2 Change Toilet Valve', the lines as a
-            #    sentence of how many of what. Falls back to #name where there are none
-
-line = job.line_items.first
+line = job.lines.first
+line.id # =&gt; 'Njc5MjAw', the ID Jobber files the line by
 line.quantity # =&gt; 3, whole where Jobber's own Float has nothing after the point, and 3.5
               #    where it has: '3 Faucets', or '3.5 Hours' for what was really billed
 line.name # =&gt; 'Bathroom Faucet Installation'
-line.to_s # =&gt; '3 Bathroom Faucet Installation', how many of what, and the name alone
-          #    where Jobber holds no quantity for the line</code></pre></div>
+line.description # =&gt; 'Replace washers and reseat', what the line says beyond its name
+line.amount # =&gt; 285.0, what the line comes to, in dollars</code></pre></div>
 
-      <p class='note'>Every line Jobber holds is in the list, up to twenty of them, in the order it holds them and whatever each is quantified at. One it holds no quantity for reads as its name alone. Ask for nothing and nothing arrives, so <code class='inline'>oauth.jobs.first.line_items</code> is empty where the query never named them.</p>
+      <p class='note'>Every line Jobber holds is in the list, up to twenty of them, in the order it holds them. Ask for nothing and nothing arrives, so <code class='inline'>account.jobs.first.lines</code> is empty where the query never named them.</p>
     </section>
 
     <section id='invoices'>
@@ -567,12 +576,11 @@ line.to_s # =&gt; '3 Bathroom Faucet Installation', how many of what, and the na
       <hr>
 
       <p class='note'>Fetch a non-draft invoice from Jobber:</p>
-      <div class='snippet'><pre><code>invoice = oauth.invoices.find 'MjU3ODA0'
+      <div class='snippet'><pre><code>invoice = account.invoices.find 'MjU3ODA0'
 invoice.id # =&gt; 'MjU3ODA0'
-invoice.job_id # =&gt; 'Z2lkOi8vS'
-invoice.total # =&gt; '40.30'
-invoice.issued_at # =&gt; 2026-05-22 12:12:53
-invoice.completed_at # =&gt; 2026-05-22 14:32:53</code></pre></div>
+invoice.job.id # =&gt; 'Z2lkOi8vS', the job the invoice bills, or nil where none
+invoice.amount # =&gt; 40.30, in dollars, as a BigDecimal
+invoice.fulfilled_at # =&gt; 2026-05-22 14:32:53, when the job was finished, or the invoice issued</code></pre></div>
     </section>
 
     <section id='visits'>
@@ -583,72 +591,66 @@ invoice.completed_at # =&gt; 2026-05-22 14:32:53</code></pre></div>
       </div>
       <hr>
 
-      <p class='note'>Walk the account's visits, oldest first, the same way as its jobs:</p>
-      <div class='snippet'><pre><code>visits = oauth.visits # =&gt; an Enumerable of every visit, nothing fetched yet
-oauth.visits.upcoming # =&gt; an Enumerator of the ones dated from now on
-oauth.visits.past # =&gt; an Enumerator of the ones dated before now
+      <p class='note'>Walk the account's visits, oldest first, the same way as its jobs, or reach one by ID:</p>
+      <div class='snippet'><pre><code>account.visits.upcoming(3.months) # =&gt; only as far ahead as three months
+account.visits.upcoming.ids # =&gt; %w[Z2lkOi8vS ...], every page of them, and nothing else
 
-visit = visits.first
+visit = account.visits.find 'Z2lkOi8vS'
 visit.id # =&gt; 'Z2lkOi8vS'
-visit.name # =&gt; 'Furnace tune-up', or the visit's ID where nobody titled it. Never nil or empty
-visit.title # =&gt; 'Furnace tune-up'
-visit.job_id # =&gt; 'Z2lkOi8vS'
+visit.description # =&gt; 'Furnace tune-up', or nil where nobody named it
 visit.starts_at # =&gt; 2026-08-09 14:00:00
 visit.ends_at # =&gt; 2026-08-09 16:00:00
-visit.all_day? # =&gt; false
-visit.client_confirmed? # =&gt; true</code></pre></div>
+visit.anytime? # =&gt; false
+visit.confirmed? # =&gt; true, which Jobber alone asks the customer
+visit.job.id # =&gt; 'Z2lkOi8vSm9i', the job the stop belongs to, where it happens and for whom</code></pre></div>
     </section>
 
-    <section id='clients'>
+    <section id='locations'>
       <div class='head'>
         <span class='glyph' aria-hidden='true'><svg viewBox='0 0 32 32' class='g-house'><path d='M 4.5 15 L 16 5.5 L 27.5 15'/><path d='M 7.5 13.5 v 13 h 17 v -13'/><path d='M 13 26.5 v -7 h 6 v 7'/></svg></span>
-        <h2>Clients and properties</h2>
-        <a class='anchor' href='#clients' aria-label='Link to Clients and properties'>#</a>
+        <h2>Locations and customers</h2>
+        <a class='anchor' href='#locations' aria-label='Link to Locations and customers'>#</a>
       </div>
       <hr>
 
-      <p class='note'>Jobber prices a query by what it brings back, so nothing nested comes back unless it is asked for. Chain <code class='inline'>includes</code> the way Active Record does, on visits or on jobs:</p>
-      <div class='snippet'><pre><code>visit = oauth.visits.includes(:client, property: :client).upcoming.first
+      <p class='note'>Jobber prices a query by what it brings back, so nothing nested comes back unless it is asked for. Chain <code class='inline'>includes</code> the way Active Record does, on jobs, naming as much as the page should carry &mdash; <code class='inline'>includes(:lines, location: :customer)</code> asks for all of it at once. A visit happens where its job does, so it names the job and nothing else:</p>
+      <div class='snippet'><pre><code>job = account.jobs.includes(location: :customer).find 'Z2lkOi8vSm9i'
 
-visit.client.name # =&gt; 'Jane', or the business's name where the client is a business.
-                  # Never an empty string: a blank first name falls through to the company
-visit.client.first_name # =&gt; 'Jane'
-visit.client.last_name # =&gt; 'Doe'
-visit.client.company_name # =&gt; nil
-visit.client.email # =&gt; 'jane@example.com'
-visit.client.phone # =&gt; '5553335555', the reachable North American number, or nil
+job.location.id # =&gt; 'Z2lkOi8vS'
+job.location.street # =&gt; '1 Main St'
+job.location.city # =&gt; 'Raleigh'
+job.location.zip # =&gt; '27601'
+job.location.latitude # =&gt; 35.77
+job.location.longitude # =&gt; -78.63
 
-visit.property.id # =&gt; 'Z2lkOi8vS'
-visit.property.street # =&gt; '1 Main St'
-visit.property.city # =&gt; 'Raleigh'
-visit.property.zip # =&gt; '27601'
-visit.property.latitude # =&gt; 35.77
-visit.property.longitude # =&gt; -78.63
-visit.property.address # =&gt; { street: '1 Main St', city: 'Raleigh', state: 'NC',
-                       #      zip: '27601', latitude: 35.77, longitude: -78.63 }
-visit.property.client.name # =&gt; whoever the place sits on the file of</code></pre></div>
+job.location.customer.id # =&gt; 'MwMTU0Mg'
+job.location.customer.name # =&gt; 'Jane', or the business's name where the customer is one.
+                           #    Never an empty string: a blank first name falls through
+job.location.customer.surname # =&gt; 'Doe'
+job.location.customer.email # =&gt; 'jane@example.com'
+job.location.customer.phone # =&gt; '5553335555', the ten digits to dial, or nil</code></pre></div>
 
-      <p class='note'>Ask for nothing and nothing arrives: <code class='inline'>oauth.visits.first.client.name</code> is nil where the query never named a client.</p>
+      <p class='note'>Ask for nothing and nothing arrives: <code class='inline'>account.jobs.first.location</code> is nil where the query never named one.</p>
     </section>
 
-<section id='limits'>
-<div class='head'>
-  <span class='glyph' aria-hidden='true'><svg viewBox='0 0 32 32' class='g-gauge'><path d='M 5 22 A 12 12 0 1 1 27 22'/><path d='M 16 20 L 22.5 12.5'/><circle cx='16' cy='20.5' r='1.5'/></svg></span>
-  <h2>Rate limits</h2>
-  <a class='anchor' href='#limits' aria-label='Link to Rate limits'>#</a>
-</div>
-<hr>
+    <section id='limits'>
+      <div class='head'>
+        <span class='glyph' aria-hidden='true'><svg viewBox='0 0 32 32' class='g-gauge'><path d='M 5 22 A 12 12 0 1 1 27 22'/><path d='M 16 20 L 22.5 12.5'/><circle cx='16' cy='20.5' r='1.5'/></svg></span>
+        <h2>Rate limits</h2>
+        <a class='anchor' href='#limits' aria-label='Link to Rate limits'>#</a>
+      </div>
+      <hr>
 
-<p class='note'>Jobber holds an app to two limits at once: 2,500 requests every five minutes, and a bucket of query cost that drains as it is asked and refills at a rate it reports. Nothing has to be done about either &mdash; every request waits for itself. It spaces itself 0.12 seconds from the one before, which is 2,500 spread evenly over five minutes, and it reads <code class='inline'>extensions.cost</code> off each answer, waiting for the shortfall to refill where the bucket can no longer pay for a page like the last one.</p>
-<p class='note'>A request that follows no other waits for nothing, so a single lookup is as quick as it ever was. Only a walk long enough to be a problem is slowed, and only by as much as it must be.</p>
+      <p class='note'>Jobber holds an app to two limits at once: 2,500 requests every five minutes, and a bucket of query cost that drains as it is asked and refills at a rate it reports. This gem does nothing about either. It never sleeps, and it never asks a second time. What it does is say exactly what happened, so the caller can decide:</p>
+      <div class='snippet'><pre><code>Throttled (cost 1885, 1254 of 10000 available, restoring 500/s)</code></pre></div>
 
-<p class='note'>Where Jobber refuses anyway, the refusal says what the query would have cost against what was available, and what happens next follows from those two numbers:</p>
-<div class='snippet'><pre><code>Throttled (cost 1885, 1254 of 10000 available, restoring 500/s)</code></pre></div>
+      <p class='note'>That one is a <code class='inline'>Jbr::Throttled</code>, a <code class='inline'>Company::Throttled</code> for a refusal worth asking again: 631 points short of a query the bucket holds five times over, which a second would have refilled. A cost above what the bucket holds when full is worth nothing but a smaller query. Either way the decision belongs to whoever called: from a background job, letting it fail so the queue brings it back is better than a worker asleep holding a transaction open.</p>
 
-<p class='note'>631 points short of a query the bucket holds five times over, so the shortfall is waited out &mdash; 1.26 seconds at 500 a second &mdash; and the same question asked again, up to four times. Only a query costing more than the bucket <em>ever</em> holds is given up on, since no wait would help it; that one arrives as a <code class='inline'>Jbr::Error</code> carrying the line above.</p>
+      <p class='note'>Every connection the gem asks for is bounded, to keep a query on the affordable side of that: twenty lines to a job, and twenty jobs or visits to a page.</p>
 
-<p class='note'>Every connection the gem asks for is bounded, to keep a query on the affordable side of that: twenty lines to a job, and twenty jobs or visits to a page.</p>
-</section>
+      <p class='note'><code class='inline'>ids</code> is the cheap way to walk an account. It asks for the ID and nothing else, which prices a row at a fraction of a record and buys a hundred of them to a page. Reach for it where each record is then read on its own with <code class='inline'>find</code>, one background job at a time:</p>
+      <div class='snippet'><pre><code>account.jobs.past.ids.each { |id| ImportJob.perform_later id }</code></pre></div>
+    </section>
 
     <section id='events'>
       <div class='head'>

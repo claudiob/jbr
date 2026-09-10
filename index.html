@@ -486,7 +486,7 @@ business.phone # =&gt; '7044597540', the ten digits to dial, or nil where none c
 
       <p class='note'>Credentials go bad only when Jobber says so of the grant itself &mdash; <code class='inline'>The provided refresh token is not valid.</code> &mdash; which sets <code class='inline'>invalid_at</code> and answers queries with nothing. Anything else that goes wrong raises <code class='inline'>Jbr::Error</code> instead: a 500, a rate limit, and the 401 Jobber answers an app whose own client id and secret are wrong, which is every account's grant at once rather than this one's.</p>
       <div class='snippet'><pre><code>account.invalid_at # =&gt; 2026-08-13 11:02:41, or nil while the credentials are good
-account.query '{ ok }' # =&gt; {} once they are refused, raises Jbr::Error where Jobber had trouble</code></pre></div>
+account.query '{ ok }' # =&gt; {} once the credentials are dead, Jbr::Error on trouble</code></pre></div>
 
       <p class='note'>The app's own client ID and secret are read from <code class='inline'>JOBBER_CLIENT_ID</code> and <code class='inline'>JOBBER_CLIENT_SECRET</code> in the environment, and <code class='inline'>Jbr::Account.client_secret</code> answers the one to check a webhook with.</p>
     </section>
@@ -548,7 +548,7 @@ job.completed_at # =&gt; 2026-05-18 11:36:13</code></pre></div>
 account.jobs.past # =&gt; the ones dated before now, nothing fetched yet
 account.jobs.upcoming # =&gt; the ones dated from now on, nothing fetched yet
 account.jobs.past(1.year) # =&gt; only as far back as a year, which is fewer pages to read
-account.jobs.past.ids # =&gt; %w[Z2lkOi8vS ...], every page of them, and nothing else about them</code></pre></div>
+account.jobs.past.ids # =&gt; %w[Z2lkOi8vS ...], every page of them and nothing else</code></pre></div>
 
       <p class='note'>The description is whatever somebody called the job when they opened it, and often nothing at all. What the work actually was is in the lines beneath it, asked for the way anything nested is, because a page costs what it carries:</p>
       <div class='snippet'><pre><code>job = account.jobs.includes(:lines).find 'Njc5MTk5'
@@ -580,7 +580,7 @@ line.amount # =&gt; 285.0, what the line comes to, in dollars</code></pre></div>
 invoice.id # =&gt; 'MjU3ODA0'
 invoice.job.id # =&gt; 'Z2lkOi8vS', the job the invoice bills, or nil where none
 invoice.amount # =&gt; 40.30, in dollars, as a BigDecimal
-invoice.fulfilled_at # =&gt; 2026-05-22 14:32:53, when the job was finished, or the invoice issued</code></pre></div>
+invoice.fulfilled_at # =&gt; 2026-05-22 14:32:53, when the work finished or the bill issued</code></pre></div>
     </section>
 
     <section id='visits'>

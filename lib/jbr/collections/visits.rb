@@ -19,6 +19,7 @@ module Jbr
     # the one filter and nobody else's visits are answered, paged or paid for.
     # @param technician [Company::Technician] whoever the work is booked for.
     # @return [Visits] the same list, narrowed to the visits they are booked for.
+    # @note Needs no Users scope: Jobber narrows, and no user is selected to do it.
     def assigned_to(technician) = narrowed(assignedTo: technician.id)
 
   private

@@ -5,6 +5,7 @@ module Jbr
     # @param names [Array<Symbol, Hash>] :lines, :technicians, :location, or location: :customer
     #   for whose place it is.
     # @return [Collection] the same list, asking Jobber for those too.
+    # @note :technicians needs the Users scope, which refuses the whole query where it is unticked.
     def includes(*names)
       named = names.each_with_object({}) do |name, all|
         name.is_a?(Hash) ? all.merge!(name) : all[name] = nil

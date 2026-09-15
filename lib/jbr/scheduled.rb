@@ -4,14 +4,10 @@ module Jbr
   # and no job, so where a stop is and what it was booked for hang off each kind rather than off
   # what they share, and are selected inside the fragments.
   module Scheduled
-    # What every kind answers with.
-    SHARED = '__typename id title startAt endAt allDay'
-
-    # The kinds that are booked time. A reminder is a notification rather than an hour somebody
-    # is out, and Jobber's filter takes one kind and not two, so every kind is asked for and the
-    # reminders are let go as they arrive. `Task` is the name Jobber gives a BASIC_TASK, which no
-    # account read so far has answered with.
-    KINDS = %w[Visit Assessment Event Task]
+    # What every kind answers with. Jobber has four of them -- a visit, an assessment, an event
+    # and a task -- and every one is an hour somebody is out, so none is read past. A reminder
+    # is named by the filter's enum but implements nothing here, and cannot come back.
+    SHARED = 'id title startAt endAt allDay'
 
   private
 
@@ -38,6 +34,6 @@ module Jbr
       Location.selection customer: @includes[:location] == :customer if @includes.key? :location
     end
 
-    def item(node) = (Visit.new node: node if KINDS.include? node['__typename'])
+    def item(node) = Visit.new node: node
   end
 end

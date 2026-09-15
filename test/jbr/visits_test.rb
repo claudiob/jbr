@@ -46,13 +46,6 @@ class VisitsTest < Minitest::Test
     assert_nil visit.location
   end
 
-  # A reminder is a notification rather than an hour somebody is out, so it is no visit.
-  def test_a_reminder_is_not_booked_time
-    stub_visit({ 'title' => 'Quote expires' }, kind: 'QuoteReminder')
-
-    assert_nil visit
-  end
-
   # Jobber answers a field it holds nothing for with an empty string as readily as with null,
   # and a caller that validates presence needs the two to arrive as the same nothing.
   def test_a_moment_left_empty_is_no_moment_rather_than_an_empty_string

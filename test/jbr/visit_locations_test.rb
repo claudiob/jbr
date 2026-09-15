@@ -31,7 +31,8 @@ class VisitLocationsTest < Minitest::Test
   end
 
   def test_a_visit_looked_up_on_its_own_says_where_it_is_too
-    stub_graphql 'visit' => { 'id' => 'visit-01', 'property' => property }
+    stub_graphql 'visit' => { 'id' => 'visit-01', 'startAt' => '2026-08-09T14:00:00Z',
+                              'property' => property, }
 
     visit = account.visits.includes(:location).find 'visit-01'
 
@@ -47,7 +48,8 @@ private
   def property = { 'id' => 'property-01', 'address' => ADDRESS }
 
   def stub_visit(node, kind: 'Visit')
-    nodes = [ { '__typename' => kind, 'id' => 'visit-01' }.merge(node) ]
+    booked = { '__typename' => kind, 'id' => 'visit-01', 'startAt' => '2026-08-09T14:00:00Z' }
+    nodes = [ booked.merge(node) ]
     stub_graphql 'scheduledItems' => { 'nodes' => nodes,
                                        'pageInfo' => { 'hasNextPage' => false }, }
   end

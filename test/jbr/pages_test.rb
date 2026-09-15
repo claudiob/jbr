@@ -44,7 +44,7 @@ private
   end
 
   def page_with(id, page_info)
-    node = { '__typename' => 'Visit', 'id' => id }
+    node = { '__typename' => 'Visit', 'id' => id, 'startAt' => '2026-08-09T14:00:00Z' }
     { data: { 'scheduledItems' => { 'nodes' => [ node ], 'pageInfo' => page_info } } }.to_json
   end
 end

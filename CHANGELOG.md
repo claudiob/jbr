@@ -5,6 +5,11 @@
   inside the fragments; a caller reading a schedule no longer reaches through `visit.job` for an
   address, which a stop booked against a lead never had.
 
+- [Fix] An item Jobber holds no start for is no visit. `schedulingAspects: [ALL]` asks for
+  unassigned work and is answered with unscheduled work too, so a windowed list came back
+  carrying requests nobody had booked -- no start, no end, in no window. A schedule is what is
+  booked, so those are let go.
+
 - [Breaking change] An event or a task is a visit. They occupy a pro exactly as a job's stop does
   and were being read past unread. Jobber's scheduled item has exactly four kinds -- visit,
   assessment, event, task -- so nothing is filtered out now; a reminder is named by the filter's

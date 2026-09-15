@@ -11,7 +11,8 @@
   back is the assessment Jobber stored, naming the request as its lead. Jobber has no source
   for a request, so `source:` is dropped, and `ends_at:` may be nil for a stop booked to a day.
 
-  `starts_at:` must know its zone. Jobber takes a date, a local time and the zone they are in,
+  A mocked booking refuses a bare `Time` the same way, so a suite cannot pass on one Jobber
+  would not take. `starts_at:` must know its zone. Jobber takes a date, a local time and the zone they are in,
   not a moment in UTC, and a bare `Time` names an offset rather than a zone -- so one is
   refused, with `Jbr::Error`, before a client is opened.
 

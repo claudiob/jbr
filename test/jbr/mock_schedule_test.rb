@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'active_support/core_ext/time/zones'
 
 # The mock answers a schedule the way Jobber does: narrowed to a window, to a technician, and
 # to one kind of stop, with the same code a real list runs.
@@ -37,7 +38,7 @@ class MockScheduleTest < Minitest::Test
   # Booking one reaches nobody: the app already said what its lead is.
   def test_a_stop_is_booked_from_what_the_app_listed_rather_than_from_jobber
     Jbr.mock.lead = { id: 'request-01' }
-    starts_at = Time.now + 3600
+    starts_at = Time.find_zone('America/New_York').local(2026, 9, 21, 13)
 
     visit = credentials.visits.create name: 'Jane', surname: 'Doe', phone: '5553335555',
       email: nil, address: {}, description: 'Look at the roof', notes: nil, source: nil,
@@ -48,6 +49,17 @@ class MockScheduleTest < Minitest::Test
     assert_equal starts_at, visit.starts_at
     assert_equal 'request-01', visit.lead.id
     assert_equal %w[user-01], visit.technicians.map(&:id)
+  end
+
+  # What Jobber refuses, the mock refuses, or a suite passes on a booking that cannot be made.
+  def test_a_mocked_booking_refuses_the_moment_jobber_would_refuse
+    error = assert_raises(Jbr::Error) do
+      credentials.visits.create name: 'Jane', surname: nil, phone: '5553335555', email: nil,
+        address: {}, description: 'Look at the roof', notes: nil, source: nil,
+        starts_at: Time.utc(2026, 9, 21, 17), ends_at: nil, technicians: []
+    end
+
+    assert_includes error.message, 'named zone'
   end
 
 private

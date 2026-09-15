@@ -486,7 +486,8 @@ Jbr.mock.technicians = [ { id: 'user-01', name: 'Grace', surname: 'Hopper' } ]
 ```
 
 A mocked `visits.create` reaches nobody and answers the hour and the crew it was handed, with
-`Jbr.mock.lead` for the lead it hangs off.
+`Jbr.mock.lead` for the lead it hangs off. It refuses a moment naming no zone exactly as Jobber
+does, so a suite cannot pass on a booking that could not be made.
 
 ### Invoices
 

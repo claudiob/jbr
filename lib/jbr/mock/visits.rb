@@ -10,8 +10,11 @@ module Jbr
       Mock::Visit.new node: node if node
     end
 
+    # Jobber will not book a moment that names no zone, so neither will this: an app whose
+    # tests pass a bare Time would otherwise only learn of it in production.
     # @return [Mock::Visit] stop the app listed as its lead, booked for the hour asked for.
     def create(starts_at:, ends_at:, technicians:, **)
+      zone_of starts_at
       Mock::Visit.new node: { id: 'visit-01', starts_at: starts_at, ends_at: ends_at,
                               technicians: technicians.map { |each| { id: each.id } },
                               lead: Jbr.mock.lead.to_h, }

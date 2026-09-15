@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+- [Breaking change] The vocabulary is `company` 2.0: a `Company::Selection` takes its rule as a
+  block, and a visit answers a lead as well as a job. The pin moves to `~> 2.0`.
+
 - [Feature] The README says which Developer Center object each reader needs ticked. Jobber
   files a visit under Scheduled Items -- one object covering visits, assessments, tasks and
   calendar events -- and there is no Visits scope of its own.

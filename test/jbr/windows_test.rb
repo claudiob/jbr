@@ -12,6 +12,20 @@ class WindowsTest < Minitest::Test
     assert_asked_within Time.now, Time.now + 3.months
   end
 
+  # Jobber answers assigned work unless told otherwise, and is answered with unscheduled work
+  # the moment it is: both knobs go with every window, or a week is wrong in one direction or
+  # the other.
+  def test_a_window_asks_for_unassigned_work_and_not_for_unscheduled
+    stub_scheduled_items
+
+    account.visits.upcoming(1.week).to_a
+
+    assert_requested(:post, JobberStubs::GRAPHQL_URL) do |request|
+      filter = JSON.parse(request.body).dig 'variables', 'filter'
+      filter['includeUnassigned'] == true && filter['includeUnscheduled'] == false
+    end
+  end
+
   # Jobber's window takes two moments and no nil, so a half nobody measured cannot be left
   # open the way a list of jobs can: it reaches a year and says so.
   def test_a_visit_window_nobody_measured_reaches_a_year_rather_than_no_end_at_all

@@ -26,7 +26,7 @@ module Jbr
       now = Time.now
       narrowed occursWithin: { startAt: (from || now - HORIZON).iso8601,
                                endAt: (to || now + HORIZON).iso8601 },
-        schedulingAspects: [ 'ALL' ]
+        includeUnassigned: true, includeUnscheduled: false
     end
 
     # Jobber narrows a schedule by who is on it, so the technician joins the window in the one
@@ -63,10 +63,6 @@ module Jbr
     end
 
     def page = paged row(fields), PAGE
-
-    # The moment is asked for beside the ID: an item booked for no hour is no part of a schedule,
-    # and there is no telling which those are without it.
-    def ids_page = paged 'id startAt', IDS_PAGE
 
     def one
       <<~GRAPHQL

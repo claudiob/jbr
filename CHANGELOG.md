@@ -5,10 +5,10 @@
   inside the fragments; a caller reading a schedule no longer reaches through `visit.job` for an
   address, which a stop booked against a lead never had.
 
-- [Fix] An item Jobber holds no start for is no visit. `schedulingAspects: [ALL]` asks for
-  unassigned work and is answered with unscheduled work too, so a windowed list came back
-  carrying requests nobody had booked -- no start, no end, in no window. A schedule is what is
-  booked, so those are let go.
+- [Fix] A window asks for unassigned work and not for unscheduled. `schedulingAspects: [ALL]`
+  means both, so a windowed list came back carrying requests nobody had booked -- no start, no
+  end, in no window. `includeUnassigned: true` with `includeUnscheduled: false` asks for exactly
+  the half that is booked, verified against an account holding plenty of each.
 
 - [Breaking change] An event or a task is a visit. They occupy a pro exactly as a job's stop does
   and were being read past unread. Jobber's scheduled item has exactly four kinds -- visit,
@@ -47,7 +47,7 @@
   - **An open end reaches a year.** `occursWithin` takes two moments and no nil, so
     `upcoming` and `past` with no duration are bounded at a year rather than left open.
   - **Unassigned work is in.** `scheduledItems` answers assigned work only unless told
-    otherwise, so `schedulingAspects: [ALL]` is always sent. A list that did not send it would
+    otherwise, so `includeUnassigned: true` is always sent. A list that did not send it would
     quietly drop every stop nobody is on yet.
 
   `account.visits.find` still answers a stop of a job alone: Jobber files an assessment under a

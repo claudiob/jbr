@@ -330,8 +330,11 @@ on the same calendar and are read past unread, because Jobber's filter takes one
 two, so both the kinds that are visits are asked for and the rest let go as they arrive.
 
 One thing worth knowing about that list: `scheduledItems` answers assigned work only unless it
-is told otherwise, so this gem always sends `schedulingAspects: [ALL]`. Without it a week is
-quietly missing every stop nobody has been put on yet.
+is told otherwise, so every window carries `includeUnassigned: true` -- without it a week is
+quietly missing every stop nobody has been put on yet. It carries `includeUnscheduled: false`
+in the same breath, because asking for unassigned work through `schedulingAspects: [ALL]` is
+answered with unscheduled work as well: requests filed and never booked, with no hour to
+occupy and no place in any window.
 
 ### Locations and customers
 

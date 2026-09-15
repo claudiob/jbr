@@ -54,14 +54,6 @@ class VisitsTest < Minitest::Test
     assert_nil visit.ends_at
   end
 
-  # A request nobody has scheduled is answered by the same list, the filter asking for unassigned
-  # work and getting unscheduled with it. It falls in no window, so it is no part of a schedule.
-  def test_an_item_booked_for_no_hour_is_no_visit
-    stub_visit({ 'startAt' => nil, 'title' => 'Leaky faucet' }, kind: 'Assessment')
-
-    assert_nil visit
-  end
-
   def test_a_visit_of_no_job_belongs_nowhere
     stub_visit({})
 

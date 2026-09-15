@@ -34,9 +34,6 @@ module Jbr
       Location.selection customer: @includes[:location] == :customer if @includes.key? :location
     end
 
-    # An item Jobber holds no start for is booked for no hour: a request nobody has scheduled,
-    # answered here because the filter asks for unassigned work and gets unscheduled with it.
-    # It falls in no window, so it belongs in no schedule.
-    def item(node) = (Visit.new node: node if node['startAt'].present?)
+    def item(node) = Visit.new node: node
   end
 end

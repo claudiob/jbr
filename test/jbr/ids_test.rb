@@ -15,7 +15,7 @@ class IdsTest < Minitest::Test
       query = JSON.parse(request.body)['query']
       window = JSON.parse(request.body).dig 'variables', 'filter', 'occursWithin'
 
-      query.include?('scheduledItems(first: 100') && query.include?('nodes { id startAt }') &&
+      query.include?('scheduledItems(first: 100') && query.include?('nodes { id }') &&
         !query.include?('job') && window.keys.sort == %w[endAt startAt]
     end
   end

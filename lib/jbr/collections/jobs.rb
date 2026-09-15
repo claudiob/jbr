@@ -19,12 +19,12 @@ module Jbr
 
   private
 
-    def page = paged "#{FIELDS} #{selections}", PAGE
+    def page = paged row(FIELDS), PAGE
 
     def one
       <<~GRAPHQL
         query($id: EncodedId!) {
-          job(id: $id) { #{FIELDS} #{selections} }
+          job(id: $id) { #{row FIELDS} }
         }
       GRAPHQL
     end

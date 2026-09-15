@@ -2,8 +2,8 @@ module Jbr
   # What an app under test wants Jobber to answer, by the vocabulary's names.
   class Mock
     # The canned answers, each read by the matching mock collection.
-    attr_accessor :business, :quote, :job, :invoice, :lead, :jobs, :visits, :oauth_url,
-      :oauth_error
+    attr_accessor :business, :quote, :job, :invoice, :lead, :jobs, :visits, :technicians,
+      :oauth_url, :oauth_error
   end
 
   class << self

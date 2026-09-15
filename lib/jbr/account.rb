@@ -40,6 +40,9 @@ module Jbr
     # @return [Visits] visits of the business.
     def visits = Visits.new account: self
 
+    # @return [Technicians] users of the business, which reading costs the `read_users` scope.
+    def technicians = Technicians.new account: self
+
     # @return [Quotes] quotes of the business, which Jobber alone lists.
     def quotes = Quotes.new account: self
 

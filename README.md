@@ -216,6 +216,36 @@ visit.confirmed? # => true, which Jobber alone asks a client
 visit.job.id # => 'Z2lkOi8vSm9i', the job the stop belongs to, where it happens and for whom
 ```
 
+### The schedule
+
+Jobber calls a technician a user, and reading one costs the `read_users` scope. Without it
+Jobber refuses the whole query rather than the one field, so nothing asks who is on a visit
+unless a caller does:
+
+```ruby
+technician = account.technicians.first
+technician.id, technician.name, technician.surname # => 'Z2lkOi8vVXNlc', 'Grace', 'Hopper'
+
+account.visits.includes(:technicians).upcoming.first.technicians # => [#<Jbr::Technician>, ...]
+```
+
+One technician's week is the visits in it narrowed to them:
+
+```ruby
+monday = Date.today.beginning_of_week.in_time_zone
+account.visits.between(monday, monday + 1.week).assigned_to(technician).each do |visit|
+  visit.starts_at, visit.ends_at, visit.job.id
+end
+```
+
+Jobber narrows a list of visits by when they start and by nothing else, so `assigned_to` asks
+for the week, brings back who is on each visit, and lets the rest go as the pages arrive. It
+asks for the crew itself, so there is no need to `includes(:technicians)` beside it. Asking for
+the week and asking for the technician narrow the same list, in either order.
+
+A visit is not all Jobber schedules: a task, an event and an assessment sit on the same
+calendar, under `scheduledItems`, and none of them is read here.
+
 ### Locations and customers
 
 Jobber prices a query by what it brings back, so nothing nested comes back unless it is
@@ -260,7 +290,9 @@ decision belongs to whoever called: from a background job, letting it fail so th
 it back is better than a worker asleep holding a transaction open.
 
 Every connection the gem asks for is bounded, to keep a query on the affordable side of that:
-twenty lines to a job, and twenty jobs or visits to a page.
+twenty lines to a job, ten technicians to a visit, and twenty jobs, visits or technicians to a
+page. Who is on a visit is priced on top of every row that carries it, so a week read as one
+technician's costs more per page than the same week read whole.
 
 `ids` is the cheap way to walk an account. It asks for the ID and nothing else, which prices
 a row at a fraction of a record and buys a hundred of them to a page. Reach for it where each
@@ -360,7 +392,16 @@ Jbr.mock.visits = [ { id: 'visit-01', description: 'Furnace tune-up',
   location: { id: 'property-01', street: '1 Main St',
     customer: { id: 'client-01', name: 'Jane' } },
   starts_at: Date.tomorrow.noon, ends_at: Date.tomorrow.end_of_day,
-  anytime: false, confirmed: true } ]
+  anytime: false, confirmed: true,
+  technicians: [ { id: 'user-01', name: 'Grace', surname: 'Hopper' } ] } ]
+```
+
+### Technicians
+
+Mock the crew the account has:
+
+```ruby
+Jbr.mock.technicians = [ { id: 'user-01', name: 'Grace', surname: 'Hopper' } ]
 ```
 
 ### Invoices

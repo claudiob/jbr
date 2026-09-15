@@ -13,5 +13,8 @@ module Jbr
 
     # @return [Boolean, nil] whether the client confirmed the visit.
     def confirmed? = attribute :confirmed
+
+    # @return [Array<Technician>] whoever the stop is booked for, where the query asked.
+    def technicians = @node.dig(:assignedUsers, :nodes).to_a.map { Technician.new node: it }
   end
 end

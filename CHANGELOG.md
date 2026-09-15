@@ -1,9 +1,9 @@
 ## [Unreleased]
 
-- [Fix] `assigned_to` builds a `Company::Selection` the way the vocabulary now takes one, with
-  the rule as a block rather than a `technician:`. A visit of a lead -- Jobber's assessment --
-  is not read yet, so `visit.lead` is always nil here and neither `create` nor `for_jobs` and
-  `for_leads` is answered.
+- [Fix] A visit of a lead -- Jobber's assessment -- is not read yet, so `visit.lead` is always
+  nil here and neither `create` nor `for_jobs` and `for_leads` is answered. Jobber lists no
+  assessments of its own: there is an `assessment` query for one and no plural, so they arrive
+  only through `scheduledItems`, which is the change after this one.
 
 - [Feature] `account.technicians` walks the account's users a page at a time, each a
   `Jbr::Technician` reading `id`, `name` and `surname` off the `name` node Jobber answers a
@@ -16,10 +16,12 @@
   Jobber prices them on every row that carries them.
 
 - [Feature] `account.visits.between(from, to).assigned_to(technician)` is one technician's
-  week. Jobber narrows a list of visits by when they start and by nothing else, so the window
-  goes to Jobber, the crew comes back with each visit, and the visits the technician is not on
-  are let go as the pages arrive. `Jbr.mock.technicians` mocks the crew, and a mocked visit
-  takes a `technicians:` of its own.
+  week. `VisitFilterAttributes` takes an `assignedTo`, so the technician joins the window in
+  the one filter Jobber is sent: nobody else's visits are answered, paged or paid for, and the
+  crew is not read unless `includes(:technicians)` asks, which means `assigned_to` needs no
+  `read_users` scope. Both narrowings land in the same filter, so either order asks the same
+  thing. `Jbr.mock.technicians` mocks the crew, and a mocked visit takes a `technicians:` of
+  its own.
 
 ## [4.0.0] - 2026-09-09
 

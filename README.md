@@ -220,7 +220,7 @@ visit.job.id # => 'Z2lkOi8vSm9i', the job the stop belongs to, where it happens 
 
 Jobber calls a technician a user, and reading one costs the `read_users` scope. Without it
 Jobber refuses the whole query rather than the one field, so nothing asks who is on a visit
-unless a caller does:
+unless a caller does. Narrowing *to* a technician needs no such scope -- only reading one back:
 
 ```ruby
 technician = account.technicians.first
@@ -238,13 +238,17 @@ account.visits.between(monday, monday + 1.week).assigned_to(technician).each do 
 end
 ```
 
-Jobber narrows a list of visits by when they start and by nothing else, so `assigned_to` asks
-for the week, brings back who is on each visit, and lets the rest go as the pages arrive. It
-asks for the crew itself, so there is no need to `includes(:technicians)` beside it. Asking for
-the week and asking for the technician narrow the same list, in either order.
+Jobber narrows a list of visits by who is on it, so `assigned_to` puts the technician into the
+same filter as the window: nobody else's visits are answered, paged or paid for, and the crew
+is not read at all unless `includes(:technicians)` asks. The two narrowings land in the one
+filter, so a caller may ask for the week and the technician in either order.
 
-A visit is not all Jobber schedules: a task, an event and an assessment sit on the same
-calendar, under `scheduledItems`, and none of them is read here.
+`assigned_to` therefore needs no `read_users` scope. Reading *who* is on a visit does.
+
+A visit is not all Jobber schedules. A task, an event, an assessment and the two kinds of
+reminder sit on the same calendar, under `scheduledItems`, whose filter takes an `occursWithin`
+range, a `scheduleItemType` of `BASIC_TASK`, `VISIT`, `EVENT`, `ASSESSMENT`, `QUOTE_REMINDER`
+or `INVOICE_REMINDER`, and an `assignedTo` of its own. None of them is read here yet.
 
 ### Locations and customers
 
@@ -291,8 +295,8 @@ it back is better than a worker asleep holding a transaction open.
 
 Every connection the gem asks for is bounded, to keep a query on the affordable side of that:
 twenty lines to a job, ten technicians to a visit, and twenty jobs, visits or technicians to a
-page. Who is on a visit is priced on top of every row that carries it, so a week read as one
-technician's costs more per page than the same week read whole.
+page. Who is on a visit is priced on top of every row that carries it, so `includes(:technicians)`
+costs more per page -- which is why narrowing to one technician does not use it.
 
 `ids` is the cheap way to walk an account. It asks for the ID and nothing else, which prices
 a row at a fraction of a record and buys a hundred of them to a page. Reach for it where each

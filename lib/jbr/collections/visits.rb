@@ -15,16 +15,11 @@ module Jbr
       Visit.new node: node if node
     end
 
-    # Jobber cannot narrow a list of visits by who is on it, so the window is walked and the
-    # ones this technician is booked for are kept. Asking who is on a visit costs the
-    # `read_users` scope, without which Jobber refuses the whole query rather than the field.
+    # Jobber narrows a list of visits by who is on it, so the technician joins the window in
+    # the one filter and nobody else's visits are answered, paged or paid for.
     # @param technician [Company::Technician] whoever the work is booked for.
-    # @return [Company::Selection] the same list, narrowed to the visits they are booked for.
-    def assigned_to(technician)
-      Company::Selection.new(collection: includes(:technicians)) do |visit|
-        visit.technicians.any? { |each| each.id == technician.id }
-      end
-    end
+    # @return [Visits] the same list, narrowed to the visits they are booked for.
+    def assigned_to(technician) = narrowed(assignedTo: technician.id)
 
   private
 

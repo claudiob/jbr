@@ -17,6 +17,15 @@ module Jbr
       end
     end
 
-    def selected = Jbr.mock.visits.select { |visit| scheduled? visit[:starts_at] }
+    def selected
+      Jbr.mock.visits.select { |visit| scheduled?(visit[:starts_at]) && assigned?(visit) }
+    end
+
+    def assigned?(visit)
+      id = @filter&.dig :assignedTo
+      return true unless id
+
+      Array(visit[:technicians]).any? { |technician| technician[:id] == id }
+    end
   end
 end

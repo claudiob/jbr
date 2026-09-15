@@ -30,7 +30,7 @@ class ResourcesTest < Minitest::Test
     assert_equal Time.utc(2026, 5, 18, 11, 36, 13), job.completed_at
     assert_requested(:post, JobberStubs::GRAPHQL_URL) do |request|
       request.body.include? 'job(id: $id) { id title instructions total createdAt startAt ' \
-                            'completedAt quote { id amounts { total } }  }'
+                            'completedAt quote { id amounts { total } } }'
     end
   end
 

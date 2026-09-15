@@ -1,5 +1,21 @@
 ## [Unreleased]
 
+- [Feature] `account.technicians` walks the account's users a page at a time, each a
+  `Jbr::Technician` reading `id`, `name` and `surname` off the `name` node Jobber answers a
+  user with. Reading one costs the `read_users` scope, which an app granted before this
+  release does not have: Jobber refuses a query selecting a user outright rather than leaving
+  the field empty, so an app that asks for a technician re-authorizes first.
+
+- [Feature] `visit.technicians` is whoever a visit is booked for, and `includes(:technicians)`
+  is what asks for them -- nothing brings them back unbidden, for the scope above and because
+  Jobber prices them on every row that carries them.
+
+- [Feature] `account.visits.between(from, to).assigned_to(technician)` is one technician's
+  week. Jobber narrows a list of visits by when they start and by nothing else, so the window
+  goes to Jobber, the crew comes back with each visit, and the visits the technician is not on
+  are let go as the pages arrive. `Jbr.mock.technicians` mocks the crew, and a mocked visit
+  takes a `technicians:` of its own.
+
 ## [4.0.0] - 2026-09-09
 
 - [Breaking change] `Jbr::Account` is the gateway, and reads in the vocabulary the `company` gem

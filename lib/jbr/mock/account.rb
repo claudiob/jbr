@@ -11,6 +11,9 @@ module Jbr
     # @return [Mock::Visits] visits the app listed.
     def visits = Mock::Visits.new account: self
 
+    # @return [Mock::Technicians] technicians the app listed.
+    def technicians = Mock::Technicians.new account: self
+
     # @return [Mock::Quotes] the one quote the app named.
     def quotes = Mock::Quotes.new
 

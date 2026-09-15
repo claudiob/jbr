@@ -233,7 +233,9 @@ A visit is any booked time: somebody is out somewhere for an hour. A stop of a j
 an *assessment*, the stop booked to go and look at work before there is a job, which Jobber hangs
 off the request -- the lead. So is an event or a task, an hour blocked out against nothing at all.
 All of them are scheduled items, all of them mean the pro is not free, and all are read from one
-list. Only the two kinds of reminder are left out: a reminder is a notification, not an hour.
+list. Jobber has exactly four kinds -- a visit, an assessment, an event and a task -- so none is
+read past. A reminder is named by the filter's enum and is not a scheduled item at all, so it
+cannot come back.
 
 Where a stop is, is asked for: Jobber hangs the property off each kind rather than off what they
 share, and prices it per row, so `includes(:location)` is what turns it on.

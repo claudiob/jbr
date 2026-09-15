@@ -6,9 +6,10 @@
   address, which a stop booked against a lead never had.
 
 - [Breaking change] An event or a task is a visit. They occupy a pro exactly as a job's stop does
-  and were being read past unread; only the two kinds of reminder are left out now, a reminder
-  being a notification rather than an hour somebody is out. `visit.job`, `visit.lead` and
-  `visit.location` are all nil on one.
+  and were being read past unread. Jobber's scheduled item has exactly four kinds -- visit,
+  assessment, event, task -- so nothing is filtered out now; a reminder is named by the filter's
+  enum but is not a scheduled item and cannot come back. `visit.job` and `visit.lead` are nil on
+  an event, and `visit.location` may be: Jobber gives an event a property, and not always.
 
 - [Breaking change] The vocabulary is `company` 2.0: a `Company::Selection` takes its rule as a
   block, and a visit answers a lead as well as a job. The pin moves to `~> 2.0`.

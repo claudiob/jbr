@@ -64,8 +64,6 @@ module Jbr
 
     def page = paged row(fields), PAGE
 
-    def ids_page = paged '__typename id', IDS_PAGE
-
     def one
       <<~GRAPHQL
         query($id: EncodedId!) {

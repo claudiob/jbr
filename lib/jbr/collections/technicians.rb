@@ -1,6 +1,6 @@
 module Jbr
-  # The users on a Jobber account, walked a page at a time. Reading them at all costs the
-  # `read_users` scope.
+  # The users on a Jobber account, walked a page at a time. Reading one at all needs the Users
+  # scope; narrowing a list to one does not.
   class Technicians < Collection
     include Listable
 

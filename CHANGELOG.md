@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+- [Feature] The README says which Developer Center object each reader needs ticked. Jobber
+  files a visit under Scheduled Items -- one object covering visits, assessments, tasks and
+  calendar events -- and there is no Visits scope of its own.
+
 - [Fix] A visit of a lead -- Jobber's assessment -- is not read yet, so `visit.lead` is always
   nil here and neither `create` nor `for_jobs` and `for_leads` is answered. Jobber lists no
   assessments of its own: there is an `assessment` query for one and no plural, so they arrive
@@ -7,7 +11,7 @@
 
 - [Feature] `account.technicians` walks the account's users a page at a time, each a
   `Jbr::Technician` reading `id`, `name` and `surname` off the `name` node Jobber answers a
-  user with. Reading one costs the `read_users` scope, which an app granted before this
+  user with. Reading one needs the Users scope, which an app granted before this
   release does not have: Jobber refuses a query selecting a user outright rather than leaving
   the field empty, so an app that asks for a technician re-authorizes first.
 
@@ -19,7 +23,7 @@
   week. `VisitFilterAttributes` takes an `assignedTo`, so the technician joins the window in
   the one filter Jobber is sent: nobody else's visits are answered, paged or paid for, and the
   crew is not read unless `includes(:technicians)` asks, which means `assigned_to` needs no
-  `read_users` scope. Both narrowings land in the same filter, so either order asks the same
+  Users scope. Both narrowings land in the same filter, so either order asks the same
   thing. `Jbr.mock.technicians` mocks the crew, and a mocked visit takes a `technicians:` of
   its own.
 

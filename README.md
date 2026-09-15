@@ -104,6 +104,35 @@ account.query '{ ok }' # => {} once they are refused, raises Jbr::Error where Jo
 The app's own client ID and secret are read from `JOBBER_CLIENT_ID` and `JOBBER_CLIENT_SECRET`
 in the environment, and `Jbr::Account.client_secret` answers the one to check a webhook with.
 
+### Scopes
+
+Jobber has no scope parameter: an app is granted what its Developer Center page ticks, and a
+query selecting anything it was not granted is refused whole rather than answered with the one
+field empty. So a scope left unticked is not a nil somewhere, it is every query that touches it
+failing. What each reader here needs:
+
+| What a caller asks for | Object to tick |
+| --- | --- |
+| `account.jobs`, `job.lines` | Jobs |
+| `job.location`, `location.customer`, `visit.job` | Jobs and Clients |
+| `account.visits`, `visits.find`, `assigned_to` | Scheduled Items |
+| `account.technicians`, `visit.technicians`, `includes(:technicians)` | Users |
+| `account.quotes` | Quotes |
+| `account.invoices` | Invoices |
+| `account.leads.create` | Requests and Clients, both writing |
+
+Jobber files a visit under **Scheduled Items**, which is one object covering visits,
+assessments, tasks and calendar events -- so there is no scope to add for the kinds of booked
+time this gem does not read yet.
+
+`assigned_to` is the one worth knowing: narrowing to a technician needs no Users, because
+Jobber does the narrowing and no user is ever selected. Reading *who* is on a visit is what
+needs it.
+
+The mapping above is read off what each query selects, not published by Jobber, so an app that
+is refused has one more object to tick than this table knows about. The names are the ones the
+Developer Center shows beside the checkboxes.
+
 ### Leads
 
 File a request on the account's board, against the client answering to the phone and the
@@ -218,7 +247,7 @@ visit.job.id # => 'Z2lkOi8vSm9i', the job the stop belongs to, where it happens 
 
 ### The schedule
 
-Jobber calls a technician a user, and reading one costs the `read_users` scope. Without it
+Jobber calls a technician a user, and reading one needs the Users scope. Without it
 Jobber refuses the whole query rather than the one field, so nothing asks who is on a visit
 unless a caller does. Narrowing *to* a technician needs no such scope -- only reading one back:
 
@@ -243,7 +272,7 @@ same filter as the window: nobody else's visits are answered, paged or paid for,
 is not read at all unless `includes(:technicians)` asks. The two narrowings land in the one
 filter, so a caller may ask for the week and the technician in either order.
 
-`assigned_to` therefore needs no `read_users` scope. Reading *who* is on a visit does.
+`assigned_to` therefore needs no Users scope. Reading *who* is on a visit does.
 
 A visit is not all Jobber schedules. A task, an event, an assessment and the two kinds of
 reminder sit on the same calendar, under `scheduledItems`, whose filter takes an `occursWithin`

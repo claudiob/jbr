@@ -6,7 +6,7 @@ module Jbr
     FIELDS = 'id name { first last }'
 
     # What to ask for wherever a scheduled item names who it is booked for: ten, which is more
-    # than a stop is ever booked for. An app never granted `read_users` has the whole query
+    # than a stop is ever booked for. An app never granted the Users scope has the whole query
     # refused rather than this field left empty, so nothing asks for it unbidden.
     SELECTION = "assignedUsers(first: 10) { nodes { #{FIELDS} } }"
 

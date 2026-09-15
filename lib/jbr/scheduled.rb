@@ -5,7 +5,7 @@ module Jbr
   # what they share, and are selected inside the fragments.
   module Scheduled
     # What every kind answers with. Jobber has four of them -- a visit, an assessment, an event
-    # and a task -- and every one is an hour somebody is out, so none is read past. A reminder
+    # and a task -- and every one is an hour somebody is out, so no kind is read past. A reminder
     # is named by the filter's enum but implements nothing here, and cannot come back.
     SHARED = 'id title startAt endAt allDay'
 
@@ -34,6 +34,9 @@ module Jbr
       Location.selection customer: @includes[:location] == :customer if @includes.key? :location
     end
 
-    def item(node) = Visit.new node: node
+    # An item Jobber holds no start for is booked for no hour: a request nobody has scheduled,
+    # answered here because the filter asks for unassigned work and gets unscheduled with it.
+    # It falls in no window, so it belongs in no schedule.
+    def item(node) = (Visit.new node: node if node['startAt'].present?)
   end
 end

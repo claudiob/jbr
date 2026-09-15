@@ -5,7 +5,7 @@ require 'test_helper'
 class IdsTest < Minitest::Test
   def test_a_page_of_visit_ids_carries_nothing_else_and_is_five_times_the_size
     stub_graphql 'scheduledItems' => {
-      'nodes' => [ { '__typename' => 'Visit', 'id' => 'visit-01' } ],
+      'nodes' => [ { 'id' => 'visit-01', 'startAt' => '2026-08-09T14:00:00Z' } ],
       'pageInfo' => { 'hasNextPage' => false },
     }
 
@@ -15,7 +15,7 @@ class IdsTest < Minitest::Test
       query = JSON.parse(request.body)['query']
       window = JSON.parse(request.body).dig 'variables', 'filter', 'occursWithin'
 
-      query.include?('scheduledItems(first: 100') && query.include?('nodes { id }') &&
+      query.include?('scheduledItems(first: 100') && query.include?('nodes { id startAt }') &&
         !query.include?('job') && window.keys.sort == %w[endAt startAt]
     end
   end

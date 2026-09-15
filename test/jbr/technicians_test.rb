@@ -74,9 +74,10 @@ private
   def technician(node) = Jbr::Technician.new node: node
 
   def stub_visits
-    nodes = [ { '__typename' => 'Visit', 'id' => 'visit-01',
+    booked = '2026-08-09T14:00:00Z'
+    nodes = [ { '__typename' => 'Visit', 'id' => 'visit-01', 'startAt' => booked,
                 'assignedUsers' => { 'nodes' => [ grace ] } },
-              { '__typename' => 'Visit', 'id' => 'visit-02',
+              { '__typename' => 'Visit', 'id' => 'visit-02', 'startAt' => booked,
                 'assignedUsers' => { 'nodes' => [ alan ] } }, ]
     stub_graphql 'scheduledItems' => { 'nodes' => nodes,
                                        'pageInfo' => { 'hasNextPage' => false }, }

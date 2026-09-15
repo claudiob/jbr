@@ -49,10 +49,17 @@ class VisitsTest < Minitest::Test
   # Jobber answers a field it holds nothing for with an empty string as readily as with null,
   # and a caller that validates presence needs the two to arrive as the same nothing.
   def test_a_moment_left_empty_is_no_moment_rather_than_an_empty_string
-    stub_visit({ 'startAt' => '', 'endAt' => nil })
+    stub_visit({ 'endAt' => '' })
 
-    assert_nil visit.starts_at
     assert_nil visit.ends_at
+  end
+
+  # A request nobody has scheduled is answered by the same list, the filter asking for unassigned
+  # work and getting unscheduled with it. It falls in no window, so it is no part of a schedule.
+  def test_an_item_booked_for_no_hour_is_no_visit
+    stub_visit({ 'startAt' => nil, 'title' => 'Leaky faucet' }, kind: 'Assessment')
+
+    assert_nil visit
   end
 
   def test_a_visit_of_no_job_belongs_nowhere
@@ -64,7 +71,8 @@ class VisitsTest < Minitest::Test
 private
 
   def stub_visit(node, kind: 'Visit')
-    nodes = [ { '__typename' => kind, 'id' => 'visit-01' }.merge(node) ]
+    booked = { '__typename' => kind, 'id' => 'visit-01', 'startAt' => '2026-08-09T14:00:00Z' }
+    nodes = [ booked.merge(node) ]
     stub_graphql 'scheduledItems' => { 'nodes' => nodes,
                                        'pageInfo' => { 'hasNextPage' => false }, }
   end

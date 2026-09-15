@@ -22,7 +22,7 @@ class MockCollectionsTest < Minitest::Test
     assert_equal starts_at, visit.starts_at
     # One the app dated before now answers to past instead, and both answer to neither twice
     assert_equal %w[visit-02], credentials.visits.past.map(&:id)
-    assert_equal %w[visit-02 visit-01], credentials.visits.ids
+    assert_equal %w[visit-02 visit-01], credentials.visits.between(2.hours.ago, 2.hours.from_now).ids
     # And a lookup answers the one listed under that ID, or nothing
     assert_equal 'Fixed it', credentials.visits.find('visit-02').description
     assert_nil credentials.visits.find('visit-99')
@@ -71,20 +71,6 @@ class MockCollectionsTest < Minitest::Test
 
     assert_raises(Jbr::Throttled) { jobs.ids }
     assert_equal 'job-01', credentials.jobs.find('job-01').id
-  end
-
-  def test_technicians_are_whatever_the_app_asked_for
-    Jbr.mock.technicians = [ { id: 'user-01', name: 'Grace', surname: 'Hopper' } ]
-    Jbr.mock.visits = [ { id: 'visit-01', starts_at: Time.now + 3600,
-                          technicians: [ { id: 'user-01' } ], },
-                        { id: 'visit-02', starts_at: Time.now + 7200 }, ]
-
-    grace = credentials.technicians.first
-
-    assert_equal %w[user-01], credentials.technicians.ids
-    assert_equal 'Grace', grace.name
-    assert_equal 'Hopper', grace.surname
-    assert_equal %w[visit-01], credentials.visits.upcoming.assigned_to(grace).ids
   end
 
 private

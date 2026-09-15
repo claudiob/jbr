@@ -4,10 +4,24 @@
   files a visit under Scheduled Items -- one object covering visits, assessments, tasks and
   calendar events -- and there is no Visits scope of its own.
 
-- [Fix] A visit of a lead -- Jobber's assessment -- is not read yet, so `visit.lead` is always
-  nil here and neither `create` nor `for_jobs` and `for_leads` is answered. Jobber lists no
-  assessments of its own: there is an `assessment` query for one and no plural, so they arrive
-  only through `scheduledItems`, which is the change after this one.
+- [Breaking change] `account.visits` is every stop booked, not only a job's. Jobber calls the
+  stop booked to look at work before there is a job an assessment and hangs it off the request,
+  so `visit.lead` answers that request and `visit.job` is nil there; `for_jobs` and `for_leads`
+  narrow to one kind, by Jobber rather than here. The list is read from `scheduledItems` rather
+  than `visits`, which has three consequences worth reading twice:
+
+  - **A schedule is read by the window.** `scheduledItems` takes a required `occursWithin`, so
+    `account.visits` with nothing narrowing it raises `Jbr::Error` where it used to walk every
+    visit there was.
+  - **An open end reaches a year.** `occursWithin` takes two moments and no nil, so
+    `upcoming` and `past` with no duration are bounded at a year rather than left open.
+  - **Unassigned work is in.** `scheduledItems` answers assigned work only unless told
+    otherwise, so `schedulingAspects: [ALL]` is always sent. A list that did not send it would
+    quietly drop every stop nobody is on yet.
+
+  `account.visits.find` still answers a stop of a job alone: Jobber files an assessment under a
+  lookup of its own and this gem does not reach for it. Events, tasks and reminders share the
+  list and are read past, Jobber's filter taking one kind and not two.
 
 - [Feature] `account.technicians` walks the account's users a page at a time, each a
   `Jbr::Technician` reading `id`, `name` and `surname` off the `name` node Jobber answers a

@@ -1,6 +1,7 @@
 module Jbr
   # The visits an app under test asked {Jbr.mock} to answer with. Only the walk is mocked:
-  # narrowing a list, and reading it as records or as IDs, is the same code a real one runs.
+  # narrowing a list, and reading it as records or as IDs, is the same code a real one runs,
+  # so a list nothing narrowed refuses here exactly as Jobber refuses it.
   class Mock::Visits < Visits
     # @param id [String] ID the app filed the visit under.
     # @return [Mock::Visit, nil] visit the app listed under that ID, nil where it listed none.
@@ -18,14 +19,30 @@ module Jbr
     end
 
     def selected
-      Jbr.mock.visits.select { |visit| scheduled?(visit[:starts_at]) && assigned?(visit) }
+      Jbr.mock.visits.select do |visit|
+        scheduled?(visit[:starts_at]) && assigned?(visit) && kind?(visit)
+      end
+    end
+
+    def scheduled?(at)
+      window = @filter&.dig :occursWithin
+      return true unless window && at
+
+      at >= Time.iso8601(window[:startAt]) && at <= Time.iso8601(window[:endAt])
     end
 
     def assigned?(visit)
-      id = @filter&.dig :assignedTo
-      return true unless id
+      wanted = @filter&.dig :assignedTo
+      return true unless wanted
 
-      Array(visit[:technicians]).any? { |technician| technician[:id] == id }
+      Array(visit[:technicians]).any? { |technician| wanted.include? technician[:id] }
+    end
+
+    def kind?(visit)
+      kind = @filter&.dig :scheduleItemType
+      return true unless kind
+
+      kind == 'VISIT' ? !visit[:job].nil? : !visit[:lead].nil?
     end
   end
 end

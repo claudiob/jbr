@@ -54,7 +54,10 @@ module Jbr
         loop do
           answered = @account.query statement, variables: { after: after, filter: @filter }.compact
           current = answered.fetch field, {}
-          current.fetch('nodes', []).each { |node| yielder << item(node) }
+          current.fetch('nodes', []).each do |node|
+            record = item node
+            yielder << record if record
+          end
           break unless current.dig 'pageInfo', 'hasNextPage'
 
           after = current.dig 'pageInfo', 'endCursor'

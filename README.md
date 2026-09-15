@@ -104,6 +104,35 @@ account.query '{ ok }' # => {} once they are refused, raises Jbr::Error where Jo
 The app's own client ID and secret are read from `JOBBER_CLIENT_ID` and `JOBBER_CLIENT_SECRET`
 in the environment, and `Jbr::Account.client_secret` answers the one to check a webhook with.
 
+### Scopes
+
+Jobber has no scope parameter: an app is granted what its Developer Center page ticks, and a
+query selecting anything it was not granted is refused whole rather than answered with the one
+field empty. So a scope left unticked is not a nil somewhere, it is every query that touches it
+failing. What each reader here needs:
+
+| What a caller asks for | Object to tick |
+| --- | --- |
+| `account.jobs`, `job.lines` | Jobs |
+| `job.location`, `location.customer`, `visit.job` | Jobs and Clients |
+| `account.visits`, `visits.find`, `assigned_to` | Scheduled Items |
+| `account.technicians`, `visit.technicians`, `includes(:technicians)` | Users |
+| `account.quotes` | Quotes |
+| `account.invoices` | Invoices |
+| `account.leads.create` | Requests and Clients, both writing |
+
+Jobber files a visit under **Scheduled Items**, which is one object covering visits,
+assessments, tasks and calendar events -- so there is no scope to add for the kinds of booked
+time this gem does not read yet.
+
+`assigned_to` is the one worth knowing: narrowing to a technician needs no Users, because
+Jobber does the narrowing and no user is ever selected. Reading *who* is on a visit is what
+needs it.
+
+The mapping above is read off what each query selects, not published by Jobber, so an app that
+is refused has one more object to tick than this table knows about. The names are the ones the
+Developer Center shows beside the checkboxes.
+
 ### Leads
 
 File a request on the account's board, against the client answering to the phone and the
@@ -200,27 +229,71 @@ invoice.fulfilled_at # => 2026-05-22 14:32:53, when the job was finished, or the
 
 ### Visits
 
-Walk the account's visits, oldest first, the same way as its jobs, or reach one by ID:
+A visit is any booked time, and Jobber books it two ways. A stop of a job is a visit. A stop
+booked to go and look at work before there is a job is an *assessment*, which Jobber hangs off
+the request -- the lead -- rather than off a job. Both are scheduled items, and both are read
+from one list:
 
 ```ruby
 account.visits.upcoming(3.months) # => only as far ahead as three months
 account.visits.upcoming.ids # => %w[Z2lkOi8vS ...], every page of them, and nothing else
 
-visit = account.visits.find 'Z2lkOi8vS'
+visit = account.visits.upcoming(1.week).first
 visit.id # => 'Z2lkOi8vS'
 visit.description # => 'Furnace tune-up', or nil where nobody titled it
 visit.starts_at # => 2026-08-09 14:00:00
 visit.ends_at # => 2026-08-09 16:00:00
 visit.anytime? # => false
 visit.confirmed? # => true, which Jobber alone asks a client
-visit.job.id # => 'Z2lkOi8vSm9i', the job the stop belongs to, where it happens and for whom
+visit.job # => the job the stop belongs to, or nil where it was booked against a lead
+visit.lead # => the request it was booked against, or nil where a job owns the stop
 ```
+
+Either kind alone is one question rather than two, asked of Jobber rather than sifted here:
+
+```ruby
+account.visits.upcoming(1.week).for_jobs  # => only the stops of jobs
+account.visits.upcoming(1.week).for_leads # => only the assessments
+```
+
+**A schedule is read by the window.** Jobber will not list a scheduled item without one, so
+`account.visits` with nothing narrowing it raises rather than walking every visit there ever
+was. `between`, `upcoming` and `past` all supply one. Jobber's window also takes two moments
+and no nil, so `upcoming` and `past` with no duration -- which on a list of jobs means as far
+as there is -- reach a year here, and no further.
+
+`account.visits.find` answers a stop of a job. Jobber files an assessment under a lookup of its
+own, and this gem does not reach for it.
+
+Book one to go and look at work nobody has priced, against the client answering to the phone
+and the property at the address, opening either where Jobber has none:
+
+```ruby
+monday = Time.find_zone('America/New_York').local(2026, 9, 21, 13)
+visit = account.visits.create name: 'Jane', surname: 'Doe', phone: '5553335555',
+  email: 'jane@example.com', address: { street: '1 Main St', city: 'Newark', zip: '07102' },
+  description: 'Look at the roof', notes: 'Ring twice', source: 'Website',
+  starts_at: monday, ends_at: monday + 1.hour, technicians: [technician]
+
+visit.id # => 'Z2lkOi8vSm9iYmVyL0Fzc2Vzc21lbnQv', the assessment Jobber filed
+visit.lead.id # => 'Z2lkOi8vSm9iYmVyL1JlcXVlc3Qv', the request it hangs off
+```
+
+One mutation files the lead, the hour and the crew, and what comes back is what Jobber stored
+rather than what it was asked for. Jobber has no source for a request, so `source:` is dropped.
+`ends_at:` may be nil, for a stop booked to a day rather than an hour.
+
+**`starts_at:` has to know its zone.** Jobber books in the words of whoever is going -- a date,
+a local time, and the zone they are in -- rather than the moment in UTC those come to. A bare
+`Time` names an offset, and an offset is not a zone: the same one stands for several, and none
+of them says when the clocks go back. So hand over a `Time.zone` moment; a `Time` is refused
+before anything is opened.
 
 ### The schedule
 
-Jobber calls a technician a user, and reading one costs the `read_users` scope. Without it
+Jobber calls a technician a user, and reading one needs the Users scope. Without it
 Jobber refuses the whole query rather than the one field, so nothing asks who is on a visit
-unless a caller does:
+unless a caller does. Narrowing *to* a technician needs no such scope -- only reading one back:
 
 ```ruby
 technician = account.technicians.first
@@ -238,13 +311,20 @@ account.visits.between(monday, monday + 1.week).assigned_to(technician).each do 
 end
 ```
 
-Jobber narrows a list of visits by when they start and by nothing else, so `assigned_to` asks
-for the week, brings back who is on each visit, and lets the rest go as the pages arrive. It
-asks for the crew itself, so there is no need to `includes(:technicians)` beside it. Asking for
-the week and asking for the technician narrow the same list, in either order.
+Jobber narrows a list of visits by who is on it, so `assigned_to` puts the technician into the
+same filter as the window: nobody else's visits are answered, paged or paid for, and the crew
+is not read at all unless `includes(:technicians)` asks. The two narrowings land in the one
+filter, so a caller may ask for the week and the technician in either order.
 
-A visit is not all Jobber schedules: a task, an event and an assessment sit on the same
-calendar, under `scheduledItems`, and none of them is read here.
+`assigned_to` therefore needs no Users scope. Reading *who* is on a visit does.
+
+A visit is still not all Jobber schedules. A task, an event and the two kinds of reminder sit
+on the same calendar and are read past unread, because Jobber's filter takes one kind and not
+two, so both the kinds that are visits are asked for and the rest let go as they arrive.
+
+One thing worth knowing about that list: `scheduledItems` answers assigned work only unless it
+is told otherwise, so this gem always sends `schedulingAspects: [ALL]`. Without it a week is
+quietly missing every stop nobody has been put on yet.
 
 ### Locations and customers
 
@@ -291,8 +371,9 @@ it back is better than a worker asleep holding a transaction open.
 
 Every connection the gem asks for is bounded, to keep a query on the affordable side of that:
 twenty lines to a job, ten technicians to a visit, and twenty jobs, visits or technicians to a
-page. Who is on a visit is priced on top of every row that carries it, so a week read as one
-technician's costs more per page than the same week read whole.
+page, whichever kinds the page holds. Who is on a visit is priced on top of every row that
+carries it, so `includes(:technicians)` costs more per page -- which is why narrowing to one
+technician does not use it.
 
 `ids` is the cheap way to walk an account. It asks for the ID and nothing else, which prices
 a row at a fraction of a record and buys a hundred of them to a page. Reach for it where each
@@ -403,6 +484,10 @@ Mock the crew the account has:
 ```ruby
 Jbr.mock.technicians = [ { id: 'user-01', name: 'Grace', surname: 'Hopper' } ]
 ```
+
+A mocked `visits.create` reaches nobody and answers the hour and the crew it was handed, with
+`Jbr.mock.lead` for the lead it hangs off. It refuses a moment naming no zone exactly as Jobber
+does, so a suite cannot pass on a booking that could not be made.
 
 ### Invoices
 

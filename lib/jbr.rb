@@ -1,10 +1,12 @@
 require 'json'
 require 'net/http'
 
-# The vocabulary every record here answers in, and the Active Support it brings along. One
-# more file of it: an address is sent without the fields a caller left blank.
+# The vocabulary every record here answers in, and the Active Support it brings along. Two
+# more files of it: an address is sent without the fields a caller left blank, and a window
+# with no end reaches a year out.
 require 'company'
 require 'active_support/core_ext/enumerable'
+require 'active_support/core_ext/integer/time'
 
 require 'graphql/error'
 require 'graphql/unauthorized'
@@ -35,9 +37,11 @@ require 'jbr/resources/invoice'
 require 'jbr/resources/lead'
 
 require 'jbr/reader'
+require 'jbr/reading'
 require 'jbr/collection'
 require 'jbr/includable'
 require 'jbr/listable'
+require 'jbr/booking'
 require 'jbr/collections/jobs'
 require 'jbr/collections/visits'
 require 'jbr/collections/technicians'

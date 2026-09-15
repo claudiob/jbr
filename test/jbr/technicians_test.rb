@@ -31,7 +31,7 @@ class TechniciansTest < Minitest::Test
   def test_a_visit_names_whoever_it_is_booked_for_where_the_query_asked
     stub_visits
 
-    visit = account.visits.includes(:technicians).first
+    visit = account.visits.upcoming.includes(:technicians).first
 
     assert_equal %w[user-01], visit.technicians.map(&:id)
     assert_requested(:post, JobberStubs::GRAPHQL_URL) do |request|
@@ -39,11 +39,30 @@ class TechniciansTest < Minitest::Test
     end
   end
 
-  def test_one_technicians_week_is_the_window_narrowed_to_the_visits_they_are_on
+  # Jobber takes the technician in the same filter as the window, so nobody else's visits are
+  # answered: the narrowing costs a filter key rather than a page of rows to throw away.
+  def test_one_technicians_week_is_asked_of_jobber_rather_than_sifted_here
     stub_visits
 
-    assert_equal %w[visit-01], account.visits.upcoming(1.week).assigned_to(technician(grace)).ids
-    assert_equal %w[visit-02], account.visits.upcoming(1.week).assigned_to(technician(alan)).ids
+    account.visits.upcoming(1.week).assigned_to(technician(grace)).ids
+
+    assert_requested(:post, JobberStubs::GRAPHQL_URL) do |request|
+      filter = JSON.parse(request.body).dig 'variables', 'filter'
+      filter['assignedTo'] == [ 'user-01' ] && filter['occursWithin'].key?('startAt') &&
+        !request.body.include?('assignedUsers')
+    end
+  end
+
+  # The two narrowings land in the one filter, so either order asks Jobber the same thing.
+  def test_a_technician_and_a_window_narrow_the_same_filter_in_either_order
+    stub_visits
+
+    account.visits.assigned_to(technician(alan)).upcoming(1.week).ids
+
+    assert_requested(:post, JobberStubs::GRAPHQL_URL) do |request|
+      filter = JSON.parse(request.body).dig 'variables', 'filter'
+      filter['assignedTo'] == [ 'user-02' ] && filter['occursWithin'].key?('startAt')
+    end
   end
 
 private
@@ -55,8 +74,11 @@ private
   def technician(node) = Jbr::Technician.new node: node
 
   def stub_visits
-    nodes = [ { 'id' => 'visit-01', 'assignedUsers' => { 'nodes' => [ grace ] } },
-              { 'id' => 'visit-02', 'assignedUsers' => { 'nodes' => [ alan ] } }, ]
-    stub_graphql 'visits' => { 'nodes' => nodes, 'pageInfo' => { 'hasNextPage' => false } }
+    nodes = [ { '__typename' => 'Visit', 'id' => 'visit-01',
+                'assignedUsers' => { 'nodes' => [ grace ] } },
+              { '__typename' => 'Visit', 'id' => 'visit-02',
+                'assignedUsers' => { 'nodes' => [ alan ] } }, ]
+    stub_graphql 'scheduledItems' => { 'nodes' => nodes,
+                                       'pageInfo' => { 'hasNextPage' => false }, }
   end
 end

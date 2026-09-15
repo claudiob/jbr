@@ -22,10 +22,7 @@ module Jbr
     # @param from [Time, nil] the moment the window opens, or nothing for as far back as it goes.
     # @param to [Time, nil] the moment the window closes, or nothing for as far ahead as it goes.
     # @return [Collection] the same list, narrowed to what starts between the two.
-    def between(from, to)
-      bounds = { after: from&.iso8601, before: to&.iso8601 }.compact
-      self.class.new account: @account, includes: @includes, filter: { startAt: bounds }
-    end
+    def between(from, to) = narrowed(startAt: { after: from&.iso8601, before: to&.iso8601 }.compact)
 
     # The ID Jobber files each record under, and nothing else about it: the cheapest question
     # an account can be walked with, and the one to ask where every record is then read on its
@@ -35,10 +32,17 @@ module Jbr
 
   private
 
-    def scheduled?(at)
-      return true unless @filter
+    # Every narrowing lands in the one filter Jobber takes, so asking for a week and asking for
+    # a technician compose whichever way round a caller writes them.
+    def narrowed(**more)
+      self.class.new account: @account, includes: @includes, filter: @filter.to_h.merge(more)
+    end
 
-      after, before = @filter[:startAt].values_at :after, :before
+    def scheduled?(at)
+      bounds = @filter&.dig :startAt
+      return true unless bounds
+
+      after, before = bounds.values_at :after, :before
       return before.nil? unless at
 
       (after.nil? || at >= Time.iso8601(after)) && (before.nil? || at <= Time.iso8601(before))
@@ -50,7 +54,10 @@ module Jbr
         loop do
           answered = @account.query statement, variables: { after: after, filter: @filter }.compact
           current = answered.fetch field, {}
-          current.fetch('nodes', []).each { |node| yielder << item(node) }
+          current.fetch('nodes', []).each do |node|
+            record = item node
+            yielder << record if record
+          end
           break unless current.dig 'pageInfo', 'hasNextPage'
 
           after = current.dig 'pageInfo', 'endCursor'

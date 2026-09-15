@@ -4,13 +4,20 @@ require 'test_helper'
 # ask where every record is then read on its own, and the cheapest one there is to walk with.
 class IdsTest < Minitest::Test
   def test_a_page_of_visit_ids_carries_nothing_else_and_is_five_times_the_size
-    stub_graphql 'visits' => { 'nodes' => [ { 'id' => 'visit-01' } ],
-                               'pageInfo' => { 'hasNextPage' => false },
+    stub_graphql 'scheduledItems' => {
+      'nodes' => [ { '__typename' => 'Visit', 'id' => 'visit-01' } ],
+      'pageInfo' => { 'hasNextPage' => false },
     }
 
     assert_equal %w[visit-01], account.visits.upcoming.ids
-    # Told nothing of the job each belongs to: a page of IDs is IDs
-    assert_asked_for 'visits(first: 100', without: 'job', dated: 'after'
+    # Told the kind, to know a visit from an event, and nothing of the job each belongs to
+    assert_requested(:post, JobberStubs::GRAPHQL_URL, times: 1) do |request|
+      query = JSON.parse(request.body)['query']
+      window = JSON.parse(request.body).dig 'variables', 'filter', 'occursWithin'
+
+      query.include?('scheduledItems(first: 100') && query.include?('nodes { __typename id }') &&
+        !query.include?('job') && window.keys.sort == %w[endAt startAt]
+    end
   end
 
   def test_a_page_of_job_ids_carries_nothing_else_and_is_five_times_the_size

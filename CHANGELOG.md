@@ -1,8 +1,46 @@
 ## [Unreleased]
 
+- [Breaking change] The vocabulary is `company` 2.0: a `Company::Selection` takes its rule as a
+  block, and a visit answers a lead as well as a job. The pin moves to `~> 2.0`.
+
+- [Feature] The README says which Developer Center object each reader needs ticked. Jobber
+  files a visit under Scheduled Items -- one object covering visits, assessments, tasks and
+  calendar events -- and there is no Visits scope of its own.
+
+- [Feature] `account.visits.create` books a stop to go and look at work nobody has priced. It
+  takes the words `leads.create` takes plus `starts_at:`, `ends_at:` and `technicians:`, opens
+  the client and the property where Jobber has none, and files all of it in the one
+  `requestCreate`: Jobber hangs the assessment off the request it opens with it. What comes
+  back is the assessment Jobber stored, naming the request as its lead. Jobber has no source
+  for a request, so `source:` is dropped, and `ends_at:` may be nil for a stop booked to a day.
+
+  A mocked booking refuses a bare `Time` the same way, so a suite cannot pass on one Jobber
+  would not take. `starts_at:` must know its zone. Jobber takes a date, a local time and the zone they are in,
+  not a moment in UTC, and a bare `Time` names an offset rather than a zone -- so one is
+  refused, with `Jbr::Error`, before a client is opened.
+
+- [Breaking change] `account.visits` is every stop booked, not only a job's. Jobber calls the
+  stop booked to look at work before there is a job an assessment and hangs it off the request,
+  so `visit.lead` answers that request and `visit.job` is nil there; `for_jobs` and `for_leads`
+  narrow to one kind, by Jobber rather than here. The list is read from `scheduledItems` rather
+  than `visits`, which has three consequences worth reading twice:
+
+  - **A schedule is read by the window.** `scheduledItems` takes a required `occursWithin`, so
+    `account.visits` with nothing narrowing it raises `Jbr::Error` where it used to walk every
+    visit there was.
+  - **An open end reaches a year.** `occursWithin` takes two moments and no nil, so
+    `upcoming` and `past` with no duration are bounded at a year rather than left open.
+  - **Unassigned work is in.** `scheduledItems` answers assigned work only unless told
+    otherwise, so `schedulingAspects: [ALL]` is always sent. A list that did not send it would
+    quietly drop every stop nobody is on yet.
+
+  `account.visits.find` still answers a stop of a job alone: Jobber files an assessment under a
+  lookup of its own and this gem does not reach for it. Events, tasks and reminders share the
+  list and are read past, Jobber's filter taking one kind and not two.
+
 - [Feature] `account.technicians` walks the account's users a page at a time, each a
   `Jbr::Technician` reading `id`, `name` and `surname` off the `name` node Jobber answers a
-  user with. Reading one costs the `read_users` scope, which an app granted before this
+  user with. Reading one needs the Users scope, which an app granted before this
   release does not have: Jobber refuses a query selecting a user outright rather than leaving
   the field empty, so an app that asks for a technician re-authorizes first.
 
@@ -11,10 +49,12 @@
   Jobber prices them on every row that carries them.
 
 - [Feature] `account.visits.between(from, to).assigned_to(technician)` is one technician's
-  week. Jobber narrows a list of visits by when they start and by nothing else, so the window
-  goes to Jobber, the crew comes back with each visit, and the visits the technician is not on
-  are let go as the pages arrive. `Jbr.mock.technicians` mocks the crew, and a mocked visit
-  takes a `technicians:` of its own.
+  week. `VisitFilterAttributes` takes an `assignedTo`, so the technician joins the window in
+  the one filter Jobber is sent: nobody else's visits are answered, paged or paid for, and the
+  crew is not read unless `includes(:technicians)` asks, which means `assigned_to` needs no
+  Users scope. Both narrowings land in the same filter, so either order asks the same
+  thing. `Jbr.mock.technicians` mocks the crew, and a mocked visit takes a `technicians:` of
+  its own.
 
 ## [4.0.0] - 2026-09-09
 

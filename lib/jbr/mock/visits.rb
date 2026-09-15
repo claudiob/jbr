@@ -10,6 +10,13 @@ module Jbr
       Mock::Visit.new node: node if node
     end
 
+    # @return [Mock::Visit] stop the app listed as its lead, booked for the hour asked for.
+    def create(starts_at:, ends_at:, technicians:, **)
+      Mock::Visit.new node: { id: 'visit-01', starts_at: starts_at, ends_at: ends_at,
+                              technicians: technicians.map { |each| { id: each.id } },
+                              lead: Jbr.mock.lead.to_h, }
+    end
+
   private
 
     def walk(_statement)

@@ -34,6 +34,22 @@ class MockScheduleTest < Minitest::Test
     assert_equal 'request-01', week.for_leads.first.lead.id
   end
 
+  # Booking one reaches nobody: the app already said what its lead is.
+  def test_a_stop_is_booked_from_what_the_app_listed_rather_than_from_jobber
+    Jbr.mock.lead = { id: 'request-01' }
+    starts_at = Time.now + 3600
+
+    visit = credentials.visits.create name: 'Jane', surname: 'Doe', phone: '5553335555',
+      email: nil, address: {}, description: 'Look at the roof', notes: nil, source: nil,
+      starts_at: starts_at, ends_at: starts_at + 3600,
+      technicians: [ Jbr::Technician.new(node: { 'id' => 'user-01' }) ]
+
+    assert_equal 'visit-01', visit.id
+    assert_equal starts_at, visit.starts_at
+    assert_equal 'request-01', visit.lead.id
+    assert_equal %w[user-01], visit.technicians.map(&:id)
+  end
+
 private
 
   def credentials = Jbr::Account.new access_token: 'mock-token'

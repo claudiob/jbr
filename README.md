@@ -265,6 +265,30 @@ as there is -- reach a year here, and no further.
 `account.visits.find` answers a stop of a job. Jobber files an assessment under a lookup of its
 own, and this gem does not reach for it.
 
+Book one to go and look at work nobody has priced, against the client answering to the phone
+and the property at the address, opening either where Jobber has none:
+
+```ruby
+monday = Time.find_zone('America/New_York').local(2026, 9, 21, 13)
+visit = account.visits.create name: 'Jane', surname: 'Doe', phone: '5553335555',
+  email: 'jane@example.com', address: { street: '1 Main St', city: 'Newark', zip: '07102' },
+  description: 'Look at the roof', notes: 'Ring twice', source: 'Website',
+  starts_at: monday, ends_at: monday + 1.hour, technicians: [technician]
+
+visit.id # => 'Z2lkOi8vSm9iYmVyL0Fzc2Vzc21lbnQv', the assessment Jobber filed
+visit.lead.id # => 'Z2lkOi8vSm9iYmVyL1JlcXVlc3Qv', the request it hangs off
+```
+
+One mutation files the lead, the hour and the crew, and what comes back is what Jobber stored
+rather than what it was asked for. Jobber has no source for a request, so `source:` is dropped.
+`ends_at:` may be nil, for a stop booked to a day rather than an hour.
+
+**`starts_at:` has to know its zone.** Jobber books in the words of whoever is going -- a date,
+a local time, and the zone they are in -- rather than the moment in UTC those come to. A bare
+`Time` names an offset, and an offset is not a zone: the same one stands for several, and none
+of them says when the clocks go back. So hand over a `Time.zone` moment; a `Time` is refused
+before anything is opened.
+
 ### The schedule
 
 Jobber calls a technician a user, and reading one needs the Users scope. Without it
@@ -460,6 +484,9 @@ Mock the crew the account has:
 ```ruby
 Jbr.mock.technicians = [ { id: 'user-01', name: 'Grace', surname: 'Hopper' } ]
 ```
+
+A mocked `visits.create` reaches nobody and answers the hour and the crew it was handed, with
+`Jbr.mock.lead` for the lead it hangs off.
 
 ### Invoices
 

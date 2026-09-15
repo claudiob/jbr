@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+- [Fix] `assigned_to` builds a `Company::Selection` the way the vocabulary now takes one, with
+  the rule as a block rather than a `technician:`. A visit of a lead -- Jobber's assessment --
+  is not read yet, so `visit.lead` is always nil here and neither `create` nor `for_jobs` and
+  `for_leads` is answered.
+
 - [Feature] `account.technicians` walks the account's users a page at a time, each a
   `Jbr::Technician` reading `id`, `name` and `surname` off the `name` node Jobber answers a
   user with. Reading one costs the `read_users` scope, which an app granted before this

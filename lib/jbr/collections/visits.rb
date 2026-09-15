@@ -21,7 +21,9 @@ module Jbr
     # @param technician [Company::Technician] whoever the work is booked for.
     # @return [Company::Selection] the same list, narrowed to the visits they are booked for.
     def assigned_to(technician)
-      Company::Selection.new collection: includes(:technicians), technician: technician
+      Company::Selection.new(collection: includes(:technicians)) do |visit|
+        visit.technicians.any? { |each| each.id == technician.id }
+      end
     end
 
   private

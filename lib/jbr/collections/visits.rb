@@ -3,7 +3,7 @@ module Jbr
   # look at work before there is a job. Jobber files both as scheduled items and refuses to list
   # one without a window, so a list nothing narrowed has none to give and says so.
   class Visits < Company::Visits
-    include Reading, Includable, Listable
+    include Reading, Includable, Listable, Booking
 
     # What a scheduled item answers with. Only the two kinds the vocabulary calls a visit carry
     # anything past what every kind shares: the job a stop belongs to, or the request it was

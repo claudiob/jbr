@@ -4,6 +4,17 @@
   files a visit under Scheduled Items -- one object covering visits, assessments, tasks and
   calendar events -- and there is no Visits scope of its own.
 
+- [Feature] `account.visits.create` books a stop to go and look at work nobody has priced. It
+  takes the words `leads.create` takes plus `starts_at:`, `ends_at:` and `technicians:`, opens
+  the client and the property where Jobber has none, and files all of it in the one
+  `requestCreate`: Jobber hangs the assessment off the request it opens with it. What comes
+  back is the assessment Jobber stored, naming the request as its lead. Jobber has no source
+  for a request, so `source:` is dropped, and `ends_at:` may be nil for a stop booked to a day.
+
+  `starts_at:` must know its zone. Jobber takes a date, a local time and the zone they are in,
+  not a moment in UTC, and a bare `Time` names an offset rather than a zone -- so one is
+  refused, with `Jbr::Error`, before a client is opened.
+
 - [Breaking change] `account.visits` is every stop booked, not only a job's. Jobber calls the
   stop booked to look at work before there is a job an assessment and hangs it off the request,
   so `visit.lead` answers that request and `visit.job` is nil there; `for_jobs` and `for_leads`

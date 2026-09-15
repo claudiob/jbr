@@ -3,14 +3,13 @@ require 'test_helper'
 # Jobber is asked for a page at a time, and only once the page before it runs out, so `first`
 # costs one request where `to_a` costs as many as the account has pages.
 class PagesTest < Minitest::Test
-  def test_every_visit_is_walked_when_nothing_is_filtered_for
-    stub_graphql 'visits' => { 'nodes' => [ { 'id' => 'visit-01' } ],
-                               'pageInfo' => { 'hasNextPage' => false }, }
+  # Jobber lists a scheduled item by the window it falls in and refuses to list one without,
+  # so a walk of every visit there ever was is a question it will not take.
+  def test_a_schedule_with_no_window_is_one_jobber_will_not_list
+    error = assert_raises(Jbr::Error) { account.visits.to_a }
 
-    assert_equal %w[visit-01], account.visits.map(&:id)
-    assert_requested(:post, JobberStubs::GRAPHQL_URL) do |request|
-      JSON.parse(request.body).dig('variables', 'filter').nil?
-    end
+    assert_includes error.message, 'window'
+    assert_not_requested :post, JobberStubs::GRAPHQL_URL
   end
 
   def test_every_page_of_visits_is_read
@@ -45,6 +44,7 @@ private
   end
 
   def page_with(id, page_info)
-    { data: { 'visits' => { 'nodes' => [ { 'id' => id } ], 'pageInfo' => page_info } } }.to_json
+    node = { '__typename' => 'Visit', 'id' => id }
+    { data: { 'scheduledItems' => { 'nodes' => [ node ], 'pageInfo' => page_info } } }.to_json
   end
 end

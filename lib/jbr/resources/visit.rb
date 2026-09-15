@@ -14,6 +14,11 @@ module Jbr
     # @return [Boolean, nil] whether the client confirmed the visit.
     def confirmed? = attribute :confirmed
 
+    # Jobber calls the lead a request, and hangs the assessment booked to look at the work off
+    # it; a stop of a job names no request and a stop of a lead names no job.
+    # @return [Lead, nil] lead the stop belongs to, nil where the stop is a job's.
+    def lead = record Lead, :request
+
     # @return [Array<Technician>] whoever the stop is booked for, where the query asked.
     def technicians = @node.dig(:assignedUsers, :nodes).to_a.map { Technician.new node: it }
   end

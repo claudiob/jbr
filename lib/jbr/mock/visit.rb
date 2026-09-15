@@ -6,5 +6,8 @@ module Jbr
 
     # @return [Array<Company::Technician>] whoever the app said the visit is booked for.
     def technicians = records Company::Technician, :technicians
+
+    # @return [Company::Lead, nil] lead the app said the visit was booked against.
+    def lead = record Company::Lead, :lead
   end
 end

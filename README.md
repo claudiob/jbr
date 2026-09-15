@@ -229,21 +229,41 @@ invoice.fulfilled_at # => 2026-05-22 14:32:53, when the job was finished, or the
 
 ### Visits
 
-Walk the account's visits, oldest first, the same way as its jobs, or reach one by ID:
+A visit is any booked time, and Jobber books it two ways. A stop of a job is a visit. A stop
+booked to go and look at work before there is a job is an *assessment*, which Jobber hangs off
+the request -- the lead -- rather than off a job. Both are scheduled items, and both are read
+from one list:
 
 ```ruby
 account.visits.upcoming(3.months) # => only as far ahead as three months
 account.visits.upcoming.ids # => %w[Z2lkOi8vS ...], every page of them, and nothing else
 
-visit = account.visits.find 'Z2lkOi8vS'
+visit = account.visits.upcoming(1.week).first
 visit.id # => 'Z2lkOi8vS'
 visit.description # => 'Furnace tune-up', or nil where nobody titled it
 visit.starts_at # => 2026-08-09 14:00:00
 visit.ends_at # => 2026-08-09 16:00:00
 visit.anytime? # => false
 visit.confirmed? # => true, which Jobber alone asks a client
-visit.job.id # => 'Z2lkOi8vSm9i', the job the stop belongs to, where it happens and for whom
+visit.job # => the job the stop belongs to, or nil where it was booked against a lead
+visit.lead # => the request it was booked against, or nil where a job owns the stop
 ```
+
+Either kind alone is one question rather than two, asked of Jobber rather than sifted here:
+
+```ruby
+account.visits.upcoming(1.week).for_jobs  # => only the stops of jobs
+account.visits.upcoming(1.week).for_leads # => only the assessments
+```
+
+**A schedule is read by the window.** Jobber will not list a scheduled item without one, so
+`account.visits` with nothing narrowing it raises rather than walking every visit there ever
+was. `between`, `upcoming` and `past` all supply one. Jobber's window also takes two moments
+and no nil, so `upcoming` and `past` with no duration -- which on a list of jobs means as far
+as there is -- reach a year here, and no further.
+
+`account.visits.find` answers a stop of a job. Jobber files an assessment under a lookup of its
+own, and this gem does not reach for it.
 
 ### The schedule
 
@@ -274,10 +294,13 @@ filter, so a caller may ask for the week and the technician in either order.
 
 `assigned_to` therefore needs no Users scope. Reading *who* is on a visit does.
 
-A visit is not all Jobber schedules. A task, an event, an assessment and the two kinds of
-reminder sit on the same calendar, under `scheduledItems`, whose filter takes an `occursWithin`
-range, a `scheduleItemType` of `BASIC_TASK`, `VISIT`, `EVENT`, `ASSESSMENT`, `QUOTE_REMINDER`
-or `INVOICE_REMINDER`, and an `assignedTo` of its own. None of them is read here yet.
+A visit is still not all Jobber schedules. A task, an event and the two kinds of reminder sit
+on the same calendar and are read past unread, because Jobber's filter takes one kind and not
+two, so both the kinds that are visits are asked for and the rest let go as they arrive.
+
+One thing worth knowing about that list: `scheduledItems` answers assigned work only unless it
+is told otherwise, so this gem always sends `schedulingAspects: [ALL]`. Without it a week is
+quietly missing every stop nobody has been put on yet.
 
 ### Locations and customers
 
@@ -324,8 +347,9 @@ it back is better than a worker asleep holding a transaction open.
 
 Every connection the gem asks for is bounded, to keep a query on the affordable side of that:
 twenty lines to a job, ten technicians to a visit, and twenty jobs, visits or technicians to a
-page. Who is on a visit is priced on top of every row that carries it, so `includes(:technicians)`
-costs more per page -- which is why narrowing to one technician does not use it.
+page, whichever kinds the page holds. Who is on a visit is priced on top of every row that
+carries it, so `includes(:technicians)` costs more per page -- which is why narrowing to one
+technician does not use it.
 
 `ids` is the cheap way to walk an account. It asks for the ID and nothing else, which prices
 a row at a fraction of a record and buys a hundred of them to a page. Reach for it where each

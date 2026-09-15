@@ -31,7 +31,7 @@ class TechniciansTest < Minitest::Test
   def test_a_visit_names_whoever_it_is_booked_for_where_the_query_asked
     stub_visits
 
-    visit = account.visits.includes(:technicians).first
+    visit = account.visits.upcoming.includes(:technicians).first
 
     assert_equal %w[user-01], visit.technicians.map(&:id)
     assert_requested(:post, JobberStubs::GRAPHQL_URL) do |request|
@@ -48,7 +48,7 @@ class TechniciansTest < Minitest::Test
 
     assert_requested(:post, JobberStubs::GRAPHQL_URL) do |request|
       filter = JSON.parse(request.body).dig 'variables', 'filter'
-      filter['assignedTo'] == 'user-01' && filter['startAt'].key?('after') &&
+      filter['assignedTo'] == [ 'user-01' ] && filter['occursWithin'].key?('startAt') &&
         !request.body.include?('assignedUsers')
     end
   end
@@ -61,7 +61,7 @@ class TechniciansTest < Minitest::Test
 
     assert_requested(:post, JobberStubs::GRAPHQL_URL) do |request|
       filter = JSON.parse(request.body).dig 'variables', 'filter'
-      filter['assignedTo'] == 'user-02' && filter['startAt'].key?('after')
+      filter['assignedTo'] == [ 'user-02' ] && filter['occursWithin'].key?('startAt')
     end
   end
 
@@ -74,8 +74,11 @@ private
   def technician(node) = Jbr::Technician.new node: node
 
   def stub_visits
-    nodes = [ { 'id' => 'visit-01', 'assignedUsers' => { 'nodes' => [ grace ] } },
-              { 'id' => 'visit-02', 'assignedUsers' => { 'nodes' => [ alan ] } }, ]
-    stub_graphql 'visits' => { 'nodes' => nodes, 'pageInfo' => { 'hasNextPage' => false } }
+    nodes = [ { '__typename' => 'Visit', 'id' => 'visit-01',
+                'assignedUsers' => { 'nodes' => [ grace ] } },
+              { '__typename' => 'Visit', 'id' => 'visit-02',
+                'assignedUsers' => { 'nodes' => [ alan ] } }, ]
+    stub_graphql 'scheduledItems' => { 'nodes' => nodes,
+                                       'pageInfo' => { 'hasNextPage' => false }, }
   end
 end

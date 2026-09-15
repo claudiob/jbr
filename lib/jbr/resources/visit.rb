@@ -19,6 +19,11 @@ module Jbr
     # @return [Lead, nil] lead the stop belongs to, nil where the stop is a job's.
     def lead = record Lead, :request
 
+    # Jobber hangs the property off each kind of scheduled item rather than off what they
+    # share, so it is asked for inside each and read back under Jobber's own name for it.
+    # @return [Location, nil] where the stop happens, where the query asked and Jobber has one.
+    def location = record Location, :property
+
     # @return [Array<Technician>] whoever the stop is booked for, where the query asked.
     def technicians = @node.dig(:assignedUsers, :nodes).to_a.map { Technician.new node: it }
   end

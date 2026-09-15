@@ -30,7 +30,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = [ 'lib' ]
 
   spec.add_dependency 'activesupport' # to tell an empty answer from a missing one
-  spec.add_dependency 'company', '~> 2.0' # the vocabulary every record answers in
+  spec.add_dependency 'company', '~> 2.1' # the vocabulary every record answers in
 
   spec.add_development_dependency 'minitest' # to run the test suite
   spec.add_development_dependency 'rake' # to run 'bundle exec rake'

@@ -1,5 +1,15 @@
 ## [Unreleased]
 
+- [Feature] `visit.location`, where a stop is, through `includes(:location)`. Jobber hangs the
+  property off each kind of scheduled item rather than off what they share, so it is selected
+  inside the fragments; a caller reading a schedule no longer reaches through `visit.job` for an
+  address, which a stop booked against a lead never had.
+
+- [Breaking change] An event or a task is a visit. They occupy a pro exactly as a job's stop does
+  and were being read past unread; only the two kinds of reminder are left out now, a reminder
+  being a notification rather than an hour somebody is out. `visit.job`, `visit.lead` and
+  `visit.location` are all nil on one.
+
 - [Breaking change] The vocabulary is `company` 2.0: a `Company::Selection` takes its rule as a
   block, and a visit answers a lead as well as a job. The pin moves to `~> 2.0`.
 

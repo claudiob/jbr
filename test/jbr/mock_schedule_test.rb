@@ -24,7 +24,8 @@ class MockScheduleTest < Minitest::Test
 
   # A mocked visit says which kind it is by what it hangs off, the way a real one does.
   def test_the_kinds_of_visit_are_told_apart_by_what_each_hangs_off
-    Jbr.mock.visits = [ { id: 'visit-01', starts_at: Time.now + 3600, job: { id: 'job-01' } },
+    Jbr.mock.visits = [ { id: 'visit-01', starts_at: Time.now + 3600, job: { id: 'job-01' },
+                          location: { id: 'property-01', street: '1 Main St' } },
                         { id: 'visit-02', starts_at: Time.now + 7200,
                           lead: { id: 'request-01' }, }, ]
 
@@ -33,6 +34,8 @@ class MockScheduleTest < Minitest::Test
     assert_equal %w[visit-01], week.for_jobs.ids
     assert_equal %w[visit-02], week.for_leads.ids
     assert_equal 'request-01', week.for_leads.first.lead.id
+    assert_equal '1 Main St', week.for_jobs.first.location.street
+    assert_nil week.for_leads.first.location
   end
 
   # Booking one reaches nobody: the app already said what its lead is.

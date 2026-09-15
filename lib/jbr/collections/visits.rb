@@ -3,18 +3,7 @@ module Jbr
   # look at work before there is a job. Jobber files both as scheduled items and refuses to list
   # one without a window, so a list nothing narrowed has none to give and says so.
   class Visits < Company::Visits
-    include Reading, Includable, Listable, Booking
-
-    # What a scheduled item answers with. Only the two kinds the vocabulary calls a visit carry
-    # anything past what every kind shares: the job a stop belongs to, or the request it was
-    # booked against.
-    FIELDS = '__typename id title startAt endAt allDay ' \
-             '... on Visit { clientConfirmed job { id } } ' \
-             '... on Assessment { clientConfirmed request { id } }'
-
-    # The kinds the vocabulary reads. Jobber's filter takes one kind and not two, so a list of
-    # both asks for every kind and lets the events, tasks and reminders go as they arrive.
-    KINDS = %w[Visit Assessment]
+    include Reading, Scheduled, Includable, Listable, Booking
 
     # How far an open end reaches. Jobber's window takes two moments and no nil, so a caller
     # who named no end gets a year of one, which is a schedule rather than an archive.
@@ -73,14 +62,14 @@ module Jbr
       raise Error, 'A Jobber schedule is read by the window: ask between, upcoming or past'
     end
 
-    def page = paged row(FIELDS), PAGE
+    def page = paged row(fields), PAGE
 
     def ids_page = paged '__typename id', IDS_PAGE
 
     def one
       <<~GRAPHQL
         query($id: EncodedId!) {
-          visit(id: $id) { #{row 'id title startAt endAt allDay clientConfirmed job { id }'} }
+          visit(id: $id) { #{row alone} }
         }
       GRAPHQL
     end
@@ -88,7 +77,5 @@ module Jbr
     def field = 'scheduledItems'
 
     def filtered = 'ScheduledItemsFilterAttributes!'
-
-    def item(node) = (Visit.new node: node if KINDS.include? node['__typename'])
   end
 end

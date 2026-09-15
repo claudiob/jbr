@@ -9,5 +9,8 @@ module Jbr
 
     # @return [Company::Lead, nil] lead the app said the visit was booked against.
     def lead = record Company::Lead, :lead
+
+    # @return [Company::Location, nil] where the app said the visit is.
+    def location = record Company::Location, :location
   end
 end

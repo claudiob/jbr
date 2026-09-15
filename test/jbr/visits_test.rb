@@ -35,10 +35,20 @@ class VisitsTest < Minitest::Test
     assert_equal 'Quote the roof', visit.description
   end
 
-  # Jobber schedules more than the vocabulary calls a visit -- events, tasks and two kinds of
-  # reminder -- and one kind to a filter, so the rest are let go as they arrive.
-  def test_a_scheduled_item_that_is_neither_a_stop_nor_a_look_is_no_visit
+  # An hour blocked out is booked time: the pro is not free, whatever it is they are doing. It
+  # names no job, no lead and often nowhere, and it is a visit all the same.
+  def test_an_hour_blocked_out_is_booked_time_and_says_so_by_naming_nothing
     stub_visit({ 'title' => 'Team meeting' }, kind: 'Event')
+
+    assert_equal 'Team meeting', visit.description
+    assert_nil visit.job
+    assert_nil visit.lead
+    assert_nil visit.location
+  end
+
+  # A reminder is a notification rather than an hour somebody is out, so it is no visit.
+  def test_a_reminder_is_not_booked_time
+    stub_visit({ 'title' => 'Quote expires' }, kind: 'QuoteReminder')
 
     assert_nil visit
   end

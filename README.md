@@ -229,10 +229,14 @@ invoice.fulfilled_at # => 2026-05-22 14:32:53, when the job was finished, or the
 
 ### Visits
 
-A visit is any booked time, and Jobber books it two ways. A stop of a job is a visit. A stop
-booked to go and look at work before there is a job is an *assessment*, which Jobber hangs off
-the request -- the lead -- rather than off a job. Both are scheduled items, and both are read
-from one list:
+A visit is any booked time: somebody is out somewhere for an hour. A stop of a job is one. So is
+an *assessment*, the stop booked to go and look at work before there is a job, which Jobber hangs
+off the request -- the lead. So is an event or a task, an hour blocked out against nothing at all.
+All of them are scheduled items, all of them mean the pro is not free, and all are read from one
+list. Only the two kinds of reminder are left out: a reminder is a notification, not an hour.
+
+Where a stop is, is asked for: Jobber hangs the property off each kind rather than off what they
+share, and prices it per row, so `includes(:location)` is what turns it on.
 
 ```ruby
 account.visits.upcoming(3.months) # => only as far ahead as three months
@@ -245,8 +249,9 @@ visit.starts_at # => 2026-08-09 14:00:00
 visit.ends_at # => 2026-08-09 16:00:00
 visit.anytime? # => false
 visit.confirmed? # => true, which Jobber alone asks a client
-visit.job # => the job the stop belongs to, or nil where it was booked against a lead
-visit.lead # => the request it was booked against, or nil where a job owns the stop
+visit.location # => where the stop is, where `includes(:location)` asked
+visit.job # => the job the stop belongs to, or nil where no job was booked for it
+visit.lead # => the request it was booked against, or nil where no lead was booked for it
 ```
 
 Either kind alone is one question rather than two, asked of Jobber rather than sifted here:

@@ -603,6 +603,9 @@ visit.ends_at # =&gt; 2026-08-09 16:00:00
 visit.anytime? # =&gt; false
 visit.confirmed? # =&gt; true, which Jobber alone asks the customer
 visit.job.id # =&gt; 'Z2lkOi8vSm9i', the job the stop belongs to, where it happens and for whom</code></pre></div>
+      <p class='note'>The other half of a schedule &mdash; <code class='inline'>account.windows</code>, the stretches nobody is booked for &mdash; raises <code class='inline'>NotImplementedError</code> here, and will until Jobber says when a business is open. It does not today: the whole schema was enumerated looking, and there is no <code class='inline'>BusinessHours</code>, <code class='inline'>WorkingHours</code>, <code class='inline'>Shift</code> or <code class='inline'>Weekday</code> type of any kind, while <code class='inline'>OnlineBookingConfiguration</code> is four fields and none of them is an hour.</p>
+      <p class='note'>Every setting <em>around</em> those hours is there, on <code class='inline'>requestSettings</code>: <code class='inline'>intervalDurationMinutes</code> is the grain an offer is cut to, <code class='inline'>earliestAvailabilityMinutes</code> the notice the business needs, <code class='inline'>bufferDurationMinutes</code> the padding either side of a job, and <code class='inline'>efficientSchedulingType</code> with <code class='inline'>maxDriveTimeMinutes</code> whether travel counts. Read those beside the visits and free time can be worked out; read them off the form that books, not the one marked default, whose <code class='inline'>bookingType</code> may be <code class='inline'>NONE</code>.</p>
+      <p class='note'>Raising is deliberate rather than answering with none. An empty week and a fully booked one are the same shape, so a caller reading none as none would quietly stop offering the business altogether.</p>
     </section>
 
     <section id='locations'>

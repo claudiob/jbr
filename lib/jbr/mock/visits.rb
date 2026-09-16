@@ -3,13 +3,6 @@ module Jbr
   # narrowing a list, and reading it as records or as IDs, is the same code a real one runs,
   # so a list nothing narrowed refuses here exactly as Jobber refuses it.
   class Mock::Visits < Visits
-    # @param id [String] ID the app filed the visit under.
-    # @return [Mock::Visit, nil] visit the app listed under that ID, nil where it listed none.
-    def find(id)
-      node = Jbr.mock.visits.to_a.find { |visit| visit[:id] == id }
-      Mock::Visit.new node: node if node
-    end
-
     # Jobber will not book a moment that names no zone, so neither will this: an app whose
     # tests pass a bare Time would otherwise only learn of it in production.
     # @return [Mock::Visit] stop the app listed as its lead, booked for the hour asked for.

@@ -18,9 +18,6 @@ module Jbr
 
     def kind(name, own) = "... on #{name} { #{[ own, located ].compact_blank.join ' '} }"
 
-    def alone = [ 'id title startAt endAt allDay clientConfirmed job { id }', located ].
-      compact_blank.join ' '
-
     # Included before Includable so this is found first: a location asked for is selected inside
     # each kind's fragment by `kind`, and must not also be appended to what they share, where
     # Jobber has no property to answer with.

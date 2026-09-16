@@ -23,9 +23,6 @@ class MockCollectionsTest < Minitest::Test
     # One the app dated before now answers to past instead, and both answer to neither twice
     assert_equal %w[visit-02], credentials.visits.past.map(&:id)
     assert_equal %w[visit-02 visit-01], credentials.visits.between(2.hours.ago, 2.hours.from_now).ids
-    # And a lookup answers the one listed under that ID, or nothing
-    assert_equal 'Fixed it', credentials.visits.find('visit-02').description
-    assert_nil credentials.visits.find('visit-99')
   end
 
   def test_jobs_are_whatever_the_app_asked_for

@@ -2,14 +2,14 @@ module GraphQL
   # An error raised when a GraphQL request fails.
   class Error < StandardError
     # @param message [String] what the API said went wrong.
-    # @param codes [Array<String>] the `extensions.code` it named each refusal by, where it named
-    #   any: what a caller tells one kind of refusal from another by, without reading prose.
-    def initialize(message = nil, codes: [])
+    # @param data [Hash, nil] what it answered alongside, where it answered anything: an API that
+    #   refuses one field of a query and fulfils the rest sends both at once.
+    def initialize(message = nil, data: nil)
       super message
-      @codes = codes
+      @data = data
     end
 
-    # @return [Array<String>] every code the API named the refusal by, empty where it named none.
-    attr_reader :codes
+    # @return [Hash, nil] what came back beside the refusal, nil where nothing did.
+    attr_reader :data
   end
 end

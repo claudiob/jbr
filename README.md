@@ -115,7 +115,7 @@ failing. What each reader here needs:
 | --- | --- |
 | `account.jobs`, `job.lines` | Jobs |
 | `job.location`, `location.customer`, `visit.job` | Jobs and Clients |
-| `account.visits`, `visits.find`, `assigned_to` | Scheduled Items |
+| `account.visits`, `assigned_to` | Scheduled Items |
 | `account.technicians`, `visit.technicians`, `includes(:technicians)` | Users |
 | `account.quotes` | Quotes |
 | `account.invoices` | Invoices |
@@ -133,17 +133,20 @@ The mapping above is read off what each query selects, not published by Jobber, 
 is refused has one more object to tick than this table knows about. The names are the ones the
 Developer Center shows beside the checkboxes.
 
-An app that asks for what it was never granted is not left broken. Jobber refuses the whole
-statement rather than leaving the one field empty, so a reader added after an account authorized
-would otherwise take down every query carrying it. Instead the list answers empty and says so:
+An app that asks for what it was never granted is not left broken. Jobber answers
+`An object of type User was hidden due to permissions` and hides the object, so a reader added
+after an account authorized would otherwise take down every query carrying it:
 
 ```ruby
 Jbr.logger = Rails.logger # standard error until an app names somewhere better
-account.technicians.to_a # => [], with a line in the log naming the scope to tick
+account.technicians.to_a # => [], with a line in the log naming the type to tick the scope for
+account.visits.upcoming(1.week).includes(:technicians).to_a # => the week, with nobody on it
 ```
 
-Only a refusal Jobber names as one of those is carried on from. Anything else still raises: an
-empty list is a poor place to hide a fault.
+What Jobber hides is the object and not the query, so whatever came back beside it is kept: a
+list that asked for one thing too many still answers everything else it asked for. Jobber codes
+this refusal not at all, so the words are the only signal there is -- and only those words are
+carried on from. Anything else still raises: an empty list is a poor place to hide a fault.
 
 ### Leads
 
@@ -280,9 +283,6 @@ account.visits.upcoming(1.week).for_leads # => only the assessments
 was. `between`, `upcoming` and `past` all supply one. Jobber's window also takes two moments
 and no nil, so `upcoming` and `past` with no duration -- which on a list of jobs means as far
 as there is -- reach a year here, and no further.
-
-`account.visits.find` answers a stop of a job. Jobber files an assessment under a lookup of its
-own, and this gem does not reach for it.
 
 Book one to go and look at work nobody has priced, against the client answering to the phone
 and the property at the address, opening either where Jobber has none:

@@ -3,7 +3,7 @@ PATH
   specs:
     jbr (4.0.0)
       activesupport
-      company (~> 2.0)
+      company (~> 2.1)
 
 GEM
   remote: https://rubygems.org/
@@ -26,7 +26,7 @@ GEM
     ast (2.4.3)
     base64 (0.3.0)
     bigdecimal (4.1.2)
-    company (2.0.0)
+    company (2.1.0)
       activesupport
     concurrent-ruby (1.3.8)
     connection_pool (3.0.2)
@@ -139,7 +139,7 @@ CHECKSUMS
   ast (2.4.3) sha256=954615157c1d6a382bc27d690d973195e79db7f55e9765ac7c481c60bdb4d383
   base64 (0.3.0) sha256=27337aeabad6ffae05c265c450490628ef3ebd4b67be58257393227588f5a97b
   bigdecimal (4.1.2) sha256=53d217666027eab4280346fba98e7d5b66baaae1b9c3c1c0ffe89d48188a3fbd
-  company (2.0.0) sha256=910fd2231f41d7d97ab2255266a344dc722c391d305bee7ec7e5b8cc90f5df58
+  company (2.1.0) sha256=67e8a3d4a97d4a6c9851099574f7ac051501df08f1e4c3bdf49f12b9bd56aa67
   concurrent-ruby (1.3.8) sha256=b2f1be836e968ccc78ccfce277ea79c72a88633f22306782c16ff23fb415d1e1
   connection_pool (3.0.2) sha256=33fff5ba71a12d2aa26cb72b1db8bba2a1a01823559fb01d29eb74c286e62e0a
   crack (1.0.1) sha256=ff4a10390cd31d66440b7524eb1841874db86201d5b70032028553130b6d4c7e

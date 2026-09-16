@@ -30,19 +30,6 @@ class VisitLocationsTest < Minitest::Test
     assert_requested(:post, JobberStubs::GRAPHQL_URL) { |request| !request.body.include? 'property' }
   end
 
-  def test_a_visit_looked_up_on_its_own_says_where_it_is_too
-    stub_graphql 'visit' => { 'id' => 'visit-01', 'startAt' => '2026-08-09T14:00:00Z',
-                              'property' => property, }
-
-    visit = account.visits.includes(:location).find 'visit-01'
-
-    assert_equal '1 Main St', visit.location.street
-    assert_requested(:post, JobberStubs::GRAPHQL_URL) do |request|
-      request.body.include? 'visit(id: $id) { id title startAt endAt allDay clientConfirmed ' \
-                            'job { id } property {'
-    end
-  end
-
 private
 
   def property = { 'id' => 'property-01', 'address' => ADDRESS }

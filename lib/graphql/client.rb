@@ -34,10 +34,8 @@ module GraphQL
       coded = body['errors'].any? { |error| error.to_h.dig('extensions', 'code') == 'THROTTLED' }
       priced = available && cost['requestedQueryCost'].to_f > available.to_f
 
-      (coded || priced ? Throttled : Error).new refusal(body), codes: codes_in(body)
+      (coded || priced ? Throttled : Error).new refusal(body), data: body['data']
     end
-
-    def codes_in(body) = body['errors'].filter_map { |error| error.to_h.dig 'extensions', 'code' }
 
     def refusal(body)
       message = body['errors'].map { |error| error['message'] }.join '; '

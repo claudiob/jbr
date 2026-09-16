@@ -9,16 +9,6 @@ module Jbr
     # who named no end gets a year of one, which is a schedule rather than an archive.
     HORIZON = 1.year
 
-    # Shadows Enumerable#find on purpose, the way jobs do: a visit is reached by the ID Jobber
-    # files it under, not by asking every visit on the account whether it is the one. Jobber
-    # files an assessment under a lookup of its own, so this one answers a job's stop alone.
-    # @param id [String] Jobber ID of the visit.
-    # @return [Visit, nil] nil when Jobber has no visit under that ID.
-    def find(id)
-      node = @account.query(one, variables: { id: id })['visit']
-      Visit.new node: node if node
-    end
-
     # @param from [Time, nil] the moment the window opens, or nothing for as far back as there is.
     # @param to [Time, nil] the moment the window closes, or nothing for as far ahead as there is.
     # @return [Visits] the same list, narrowed to what the window holds.
@@ -63,14 +53,6 @@ module Jbr
     end
 
     def page = paged row(fields), PAGE
-
-    def one
-      <<~GRAPHQL
-        query($id: EncodedId!) {
-          visit(id: $id) { #{row alone} }
-        }
-      GRAPHQL
-    end
 
     def field = 'scheduledItems'
 

@@ -1,11 +1,18 @@
 ## [Unreleased]
 
-- [Feature] A scope the app was never granted answers empty rather than raising, with a line in
-  the log naming what to tick. Jobber refuses the whole statement and not the one field, so an
-  account that authorized before a reader existed would otherwise break on every query carrying
-  it -- `account.technicians` is exactly that case. Only a refusal Jobber codes as ungranted is
-  carried on from; anything else still raises, an empty list being a poor place to hide a fault.
-  `Jbr.logger` is where it says so, standard error until an app points it somewhere better.
+- [Feature] A scope the app was never granted no longer raises. Jobber answers `An object of
+  type User was hidden due to permissions` and hides the object rather than the query, so
+  whatever came back beside it is kept: `account.technicians` answers `[]`, and a week asked
+  for with `includes(:technicians)` answers the week with nobody on it. `Jbr.logger` takes the
+  line saying which type to tick the scope for -- standard error until an app points it
+  somewhere better. Jobber codes this refusal not at all, so the words are the only signal, and
+  only those words are carried on from: anything else raises, an empty list being a poor place
+  to hide a fault.
+
+- [Breaking change] `account.visits.find` is gone. A visit arrives from the walk carrying
+  everything it reads, so looking one up again was a request spent to learn nothing -- and it
+  answered a job's stop alone, quietly finding nothing for an assessment, an event or a task.
+  `Enumerable#find` is what the name means on a list of visits now.
 
 - [Feature] `visit.location`, where a stop is, through `includes(:location)`. Jobber hangs the
   property off each kind of scheduled item rather than off what they share, so it is selected

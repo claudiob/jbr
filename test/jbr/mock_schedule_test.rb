@@ -19,7 +19,7 @@ class MockScheduleTest < Minitest::Test
     assert_equal %w[user-01], credentials.technicians.ids
     assert_equal 'Grace', grace.name
     assert_equal 'Hopper', grace.surname
-    assert_equal %w[visit-01], credentials.visits.upcoming.assigned_to(grace).ids
+    assert_equal %w[visit-01], credentials.visits.upcoming.of(grace).ids
   end
 
   # A mocked visit says which kind it is by what it hangs off, the way a real one does.

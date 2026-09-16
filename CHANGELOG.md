@@ -1,5 +1,23 @@
 ## [Unreleased]
 
+## [6.0.0] - 2026-09-16
+
+- [Breaking change] The vocabulary is `company` 3.0: `assigned_to` is `of`, so
+  `account.visits.of(technician)` is what `account.visits.assigned_to(technician)` was. Jobber
+  still narrows it in the one filter, and it still needs no Users scope. The pin is `~> 3.0`.
+
+- [Note] `account.windows` -- the free time of a business -- raises `NotImplementedError` here,
+  and will until Jobber exposes the hours a business keeps. It does not today: the schema was
+  enumerated looking, and there is no `BusinessHours`, `WorkingHours`, `Shift` or `Weekday` type
+  of any kind, while `OnlineBookingConfiguration` is four fields and none of them is an hour.
+
+- [Note] Every setting around those hours is there, on `requestSettings`:
+  `intervalDurationMinutes` is the grain, `earliestAvailabilityMinutes` the notice,
+  `bufferDurationMinutes` the padding either side of a job, `efficientSchedulingType` and
+  `maxDriveTimeMinutes` whether travel counts. A caller can work free time out from those and
+  the visits. Read them off the form that books, not the one marked default, whose
+  `bookingType` may be `NONE`.
+
 ## [5.0.0] - 2026-09-15
 
 - [Feature] A scope the app was never granted no longer raises. Jobber answers `An object of

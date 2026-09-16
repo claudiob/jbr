@@ -115,7 +115,7 @@ failing. What each reader here needs:
 | --- | --- |
 | `account.jobs`, `job.lines` | Jobs |
 | `job.location`, `location.customer`, `visit.job` | Jobs and Clients |
-| `account.visits`, `assigned_to` | Scheduled Items |
+| `account.visits`, `of` | Scheduled Items |
 | `account.technicians`, `visit.technicians`, `includes(:technicians)` | Users |
 | `account.quotes` | Quotes |
 | `account.invoices` | Invoices |
@@ -125,7 +125,7 @@ Jobber files a visit under **Scheduled Items**, which is one object covering vis
 assessments, tasks and calendar events -- so there is no scope to add for the kinds of booked
 time this gem does not read yet.
 
-`assigned_to` is the one worth knowing: narrowing to a technician needs no Users, because
+`of` is the one worth knowing: narrowing to a technician needs no Users, because
 Jobber does the narrowing and no user is ever selected. Reading *who* is on a visit is what
 needs it.
 
@@ -325,17 +325,40 @@ One technician's week is the visits in it narrowed to them:
 
 ```ruby
 monday = Date.today.beginning_of_week.in_time_zone
-account.visits.between(monday, monday + 1.week).assigned_to(technician).each do |visit|
+account.visits.between(monday, monday + 1.week).of(technician).each do |visit|
   visit.starts_at, visit.ends_at, visit.job.id
 end
 ```
 
-Jobber narrows a list of visits by who is on it, so `assigned_to` puts the technician into the
+Jobber narrows a list of visits by who is on it, so `of` puts the technician into the
 same filter as the window: nobody else's visits are answered, paged or paid for, and the crew
 is not read at all unless `includes(:technicians)` asks. The two narrowings land in the one
 filter, so a caller may ask for the week and the technician in either order.
 
-`assigned_to` therefore needs no Users scope. Reading *who* is on a visit does.
+`of` therefore needs no Users scope. Reading *who* is on a visit does.
+
+## What Jobber cannot say
+
+`account.windows` -- the free time of a business, which the vocabulary names -- raises
+`NotImplementedError` here, and will go on doing so until Jobber exposes the hours a business
+keeps.
+
+It does not today. The whole schema was enumerated looking for it: there is no `BusinessHours`,
+`WorkingHours`, `OperatingHours`, `Shift`, `Weekday` or `DayOfWeek` type of any kind, and
+`OnlineBookingConfiguration` is four fields -- whether bookings are on, the URL, the embed
+script, the id. Jobber's own booking page must know the hours; the API does not say them.
+
+What it does say is every setting around them, on `requestSettings`:
+`intervalDurationMinutes` is the grain an offer is cut to, `earliestAvailabilityMinutes` the
+notice the business needs, `bufferDurationMinutes` the padding left either side of a job, and
+`efficientSchedulingType` with `maxDriveTimeMinutes` whether travel is counted as well. Read
+those beside the visits and a caller can work free time out for itself -- which is what the
+missing reader would have done. Take the settings from the form that books, not the one marked
+default: the default form may be a request form, whose `bookingType` is `NONE`.
+
+Raising is deliberate rather than answering with none. An empty week and a fully booked one are
+the same shape, so a caller reading none as none would quietly stop offering the business
+altogether, with nothing in a log and no page looking wrong.
 
 A visit is still not all Jobber schedules. A task, an event and the two kinds of reminder sit
 on the same calendar and are read past unread, because Jobber's filter takes one kind and not

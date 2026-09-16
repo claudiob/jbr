@@ -44,7 +44,7 @@ class TechniciansTest < Minitest::Test
   def test_one_technicians_week_is_asked_of_jobber_rather_than_sifted_here
     stub_visits
 
-    account.visits.upcoming(1.week).assigned_to(technician(grace)).ids
+    account.visits.upcoming(1.week).of(technician(grace)).ids
 
     assert_requested(:post, JobberStubs::GRAPHQL_URL) do |request|
       filter = JSON.parse(request.body).dig 'variables', 'filter'
@@ -57,7 +57,7 @@ class TechniciansTest < Minitest::Test
   def test_a_technician_and_a_window_narrow_the_same_filter_in_either_order
     stub_visits
 
-    account.visits.assigned_to(technician(alan)).upcoming(1.week).ids
+    account.visits.of(technician(alan)).upcoming(1.week).ids
 
     assert_requested(:post, JobberStubs::GRAPHQL_URL) do |request|
       filter = JSON.parse(request.body).dig 'variables', 'filter'

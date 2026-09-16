@@ -24,7 +24,7 @@ module Jbr
     # @param technician [Company::Technician] whoever the work is booked for.
     # @return [Visits] the same list, narrowed to what they are booked for.
     # @note Needs no Users scope: Jobber narrows, and no user is selected to do it.
-    def assigned_to(technician) = narrowed(assignedTo: [ technician.id ])
+    def of(technician) = narrowed(assignedTo: [ technician.id ])
 
     # @return [Visits] the same list, narrowed to the stops of jobs, by Jobber rather than here.
     def for_jobs = narrowed(scheduleItemType: 'VISIT')

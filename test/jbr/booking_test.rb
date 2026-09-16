@@ -45,7 +45,7 @@ class BookingTest < Minitest::Test
     assert_requested(:post, GRAPHQL_URL) do |request|
       schedule = booked_in request
       schedule && schedule['startAt'] == { 'date' => '2026-09-21', 'time' => '13:00:00',
-                                           'timezone' => 'America/New_York' } &&
+                                           'timezone' => 'America/New_York', } &&
         schedule['endAt']['time'] == '14:00:00' &&
         schedule['teamMemberIdsToAssign'] == [ 'user-01' ]
     end

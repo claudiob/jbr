@@ -22,7 +22,7 @@ class UngrantedTest < Minitest::Test
   def test_what_came_back_beside_the_hidden_object_is_kept
     stub_hidden data: { 'scheduledItems' => {
       'nodes' => [ { 'id' => 'visit-01', 'title' => 'Tune-up',
-                     'startAt' => '2026-08-09T14:00:00Z', 'assignedUsers' => nil } ],
+                     'startAt' => '2026-08-09T14:00:00Z', 'assignedUsers' => nil, } ],
       'pageInfo' => { 'hasNextPage' => false },
     } }
 
@@ -50,7 +50,7 @@ private
   def stub_hidden(data:)
     stub_graphql_failure status: 200, body: {
       errors: [ { message: 'An object of type User was hidden due to permissions',
-                  path: %w[users nodes] } ],
+                  path: %w[users nodes], } ],
       data: data,
     }.to_json
   end

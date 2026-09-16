@@ -13,7 +13,7 @@ module Jbr
 
     def fields
       [ SHARED, kind('Visit', 'clientConfirmed job { id }'),
-        kind('Assessment', 'clientConfirmed request { id }') ].join ' '
+        kind('Assessment', 'clientConfirmed request { id }'), ].join ' '
     end
 
     def kind(name, own) = "... on #{name} { #{[ own, located ].compact_blank.join ' '} }"

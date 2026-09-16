@@ -40,7 +40,7 @@ module Jbr
 
     def schedule(starts_at, ends_at, technicians)
       { startAt: moment(starts_at), endAt: (moment(ends_at) if ends_at),
-        teamMemberIdsToAssign: technicians.map(&:id) }.compact
+        teamMemberIdsToAssign: technicians.map(&:id), }.compact
     end
 
     def moment(at)

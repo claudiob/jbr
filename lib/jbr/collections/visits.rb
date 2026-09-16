@@ -15,7 +15,7 @@ module Jbr
     def between(from, to)
       now = Time.now
       narrowed occursWithin: { startAt: (from || now - HORIZON).iso8601,
-                               endAt: (to || now + HORIZON).iso8601 },
+                               endAt: (to || now + HORIZON).iso8601, },
         includeUnassigned: true, includeUnscheduled: false
     end
 

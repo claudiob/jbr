@@ -22,7 +22,8 @@ class MockCollectionsTest < Minitest::Test
     assert_equal starts_at, visit.starts_at
     # One the app dated before now answers to past instead, and both answer to neither twice
     assert_equal %w[visit-02], credentials.visits.past.map(&:id)
-    assert_equal %w[visit-02 visit-01], credentials.visits.between(2.hours.ago, 2.hours.from_now).ids
+    assert_equal %w[visit-02 visit-01],
+credentials.visits.between(2.hours.ago, 2.hours.from_now).ids
   end
 
   def test_jobs_are_whatever_the_app_asked_for

@@ -133,6 +133,18 @@ The mapping above is read off what each query selects, not published by Jobber, 
 is refused has one more object to tick than this table knows about. The names are the ones the
 Developer Center shows beside the checkboxes.
 
+An app that asks for what it was never granted is not left broken. Jobber refuses the whole
+statement rather than leaving the one field empty, so a reader added after an account authorized
+would otherwise take down every query carrying it. Instead the list answers empty and says so:
+
+```ruby
+Jbr.logger = Rails.logger # standard error until an app names somewhere better
+account.technicians.to_a # => [], with a line in the log naming the scope to tick
+```
+
+Only a refusal Jobber names as one of those is carried on from. Anything else still raises: an
+empty list is a poor place to hide a fault.
+
 ### Leads
 
 File a request on the account's board, against the client answering to the phone and the

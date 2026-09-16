@@ -1,5 +1,12 @@
 ## [Unreleased]
 
+- [Feature] A scope the app was never granted answers empty rather than raising, with a line in
+  the log naming what to tick. Jobber refuses the whole statement and not the one field, so an
+  account that authorized before a reader existed would otherwise break on every query carrying
+  it -- `account.technicians` is exactly that case. Only a refusal Jobber codes as ungranted is
+  carried on from; anything else still raises, an empty list being a poor place to hide a fault.
+  `Jbr.logger` is where it says so, standard error until an app points it somewhere better.
+
 - [Feature] `visit.location`, where a stop is, through `includes(:location)`. Jobber hangs the
   property off each kind of scheduled item rather than off what they share, so it is selected
   inside the fragments; a caller reading a schedule no longer reaches through `visit.job` for an

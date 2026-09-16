@@ -8,6 +8,13 @@ module Jbr
     # The version of the schema every statement is written against.
     HEADERS = { 'X-JOBBER-GRAPHQL-VERSION' => '2026-04-22' }
 
+    # How Jobber names a refusal to answer for what the grant does not cover. It refuses the
+    # whole statement rather than leaving the one field empty, so an app granted its scopes
+    # before a reader existed would break on every query carrying that reader. Answering nothing
+    # keeps it working, a field short and saying so. Anything Jobber names otherwise still
+    # raises: a refusal nobody recognises is not one to carry on from.
+    UNGRANTED = %w[UNAUTHORIZED FORBIDDEN INSUFFICIENT_SCOPE].freeze
+
     # The mutation that revokes the app on the account.
     DISCONNECT = <<~GRAPHQL
       mutation Disconnect {
@@ -22,7 +29,8 @@ module Jbr
     # asking from a background job has a queue that will bring the whole job back later.
     # @param statement [String] query or mutation to run.
     # @param variables [Hash] what the statement takes.
-    # @return [Hash] data Jobber answered, or empty when the credentials are dead.
+    # @return [Hash] data Jobber answered, or empty where the credentials are dead or the grant
+    #   does not cover what was asked for.
     # @raise [Throttled] where Jobber refused the statement for what it costs.
     # @raise [Error] where Jobber refused the statement, or took a mutation and would not act.
     def query(statement, variables: {})
@@ -36,7 +44,11 @@ module Jbr
     rescue GraphQL::Throttled => error
       raise Throttled, error.message
     rescue GraphQL::Error => error
-      raise Error, error.message
+      raise Error, error.message if (error.codes & UNGRANTED).empty?
+
+      Jbr.logger.warn "Jobber answered nothing: the app is not granted what it asked for. " \
+                      "Tick the scope it names and have the account authorize again. #{error.message}"
+      {}
     end
 
     # Revoke the credentials on the account. Dead ones have nothing left to revoke.

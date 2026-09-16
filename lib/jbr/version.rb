@@ -1,5 +1,5 @@
 # A Ruby client for the Jobber API.
 module Jbr
   # The version of this gem.
-  VERSION = '4.0.0'
+  VERSION = '5.0.0'
 end

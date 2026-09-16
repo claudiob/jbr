@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [5.0.0] - 2026-09-15
+
 - [Feature] A scope the app was never granted no longer raises. Jobber answers `An object of
   type User was hidden due to permissions` and hides the object rather than the query, so
   whatever came back beside it is kept: `account.technicians` answers `[]`, and a week asked
@@ -30,8 +32,8 @@
   enum but is not a scheduled item and cannot come back. `visit.job` and `visit.lead` are nil on
   an event, and `visit.location` may be: Jobber gives an event a property, and not always.
 
-- [Breaking change] The vocabulary is `company` 2.0: a `Company::Selection` takes its rule as a
-  block, and a visit answers a lead as well as a job. The pin moves to `~> 2.0`.
+- [Breaking change] The vocabulary is `company` 2.1: a `Company::Selection` takes its rule as a
+  block, a visit answers a lead as well as a job, and it says where it is. The pin is `~> 2.1`.
 
 - [Feature] The README says which Developer Center object each reader needs ticked. Jobber
   files a visit under Scheduled Items -- one object covering visits, assessments, tasks and

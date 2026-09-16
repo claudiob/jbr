@@ -13,10 +13,10 @@ To install on your system, run
 
 To use inside a bundled Ruby project, add this line to the `Gemfile`:
 
-    gem 'jbr', '~> 4.0'
+    gem 'jbr', '~> 5.0'
 
 Semantic Versioning promises that `~> major.minor` never crosses a breaking change, so the pin
-takes every 4.x release and stops short of 5.0.
+takes every 5.x release and stops short of 6.0.
 
 ## Available methods
 

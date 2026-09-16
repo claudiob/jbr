@@ -14,6 +14,7 @@ require 'graphql/throttled'
 require 'graphql/client'
 
 require 'jbr/version'
+require 'jbr/logger'
 require 'jbr/error'
 require 'jbr/errors/refused'
 require 'jbr/errors/throttled'

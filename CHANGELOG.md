@@ -1,5 +1,15 @@
 ## [Unreleased]
 
+## [7.0.0] - 2026-09-17
+
+- [Breaking change] The vocabulary is `company` 4.0: `of` takes the ID Jobber files a technician
+  under rather than the technician, so `account.visits.of(technician.id)` is what
+  `account.visits.of(technician)` was. It still lands in the one filter beside the window, and
+  it still needs no Users scope. The pin is `~> 4.0`.
+
+- [Note] The ID is the whole of what `assignedTo` ever took, and asking for it plainly is what
+  stops a caller handing over a record of its own whose `id` is not the one Jobber knows.
+
 ## [6.0.0] - 2026-09-16
 
 - [Breaking change] The vocabulary is `company` 3.0: `assigned_to` is `of`, so

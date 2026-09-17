@@ -325,7 +325,7 @@ One technician's week is the visits in it narrowed to them:
 
 ```ruby
 monday = Date.today.beginning_of_week.in_time_zone
-account.visits.between(monday, monday + 1.week).of(technician).each do |visit|
+account.visits.between(monday, monday + 1.week).of(technician.id).each do |visit|
   visit.starts_at, visit.ends_at, visit.job.id
 end
 ```

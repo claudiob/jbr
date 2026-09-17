@@ -21,10 +21,10 @@ module Jbr
 
     # Jobber narrows a schedule by who is on it, so the technician joins the window in the one
     # filter and nobody else's work is answered, paged or paid for.
-    # @param technician [Company::Technician] whoever the work is booked for.
+    # @param id [String] ID Jobber files whoever the work is booked for under.
     # @return [Visits] the same list, narrowed to what they are booked for.
     # @note Needs no Users scope: Jobber narrows, and no user is selected to do it.
-    def of(technician) = narrowed(assignedTo: [ technician.id ])
+    def of(id) = narrowed(assignedTo: [ id ])
 
     # @return [Visits] the same list, narrowed to the stops of jobs, by Jobber rather than here.
     def for_jobs = narrowed(scheduleItemType: 'VISIT')

@@ -14,6 +14,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     name: Ruby ${{ matrix.ruby }}
+
+    # Without this the runner resolves whatever the lock got wrong and says nothing, so a
+    # release that bumps the version and the pin and forgets the lock still goes green.
+    env:
+      BUNDLE_FROZEN: 'true'
+
     strategy:
       matrix:
         ruby:
